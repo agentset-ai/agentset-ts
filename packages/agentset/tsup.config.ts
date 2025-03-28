@@ -1,15 +1,13 @@
 import { defineConfig } from "tsup";
 
-export default defineConfig((options) => ({
+export default defineConfig(() => ({
   entry: ["src/index.ts"],
   format: ["esm", "cjs"],
-  outExtension({ format, options }) {
+  outExtension({ format }) {
     const ext = format === "esm" ? "mjs" : "js";
     const finalFormat = format === "cjs" || format === "esm" ? "" : format;
 
-    const outputExtension = options.minify
-      ? `${finalFormat}.min.${ext}`
-      : `${finalFormat}.${ext}`;
+    const outputExtension = `${finalFormat}.${ext}`;
 
     return {
       js: outputExtension.startsWith(".")
@@ -17,7 +15,6 @@ export default defineConfig((options) => ({
         : `.${outputExtension}`,
     };
   },
-  minify: !options.watch,
   treeshake: true,
   splitting: false,
   sourcemap: true,
