@@ -1,5 +1,11 @@
 # agentset
 
+## 1.1.1
+
+### Patch Changes
+
+- c9606b2: Fix release workflow
+
 ## 1.1.0
 
 ### Minor Changes
