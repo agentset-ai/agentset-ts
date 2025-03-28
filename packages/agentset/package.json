@@ -6,7 +6,7 @@
     "directory": "packages/agentset"
   },
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "main": "dist/index.min.js",
   "module": "dist/index.min.mjs",
