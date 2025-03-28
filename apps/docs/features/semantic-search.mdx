@@ -1,0 +1,147 @@
+---
+title: 'Semantic Search'
+description: 'Retrieve the most relevant documents using state-of-the-art search algorithms'
+---
+
+## Advanced Semantic Search
+
+Agentset's semantic search capability goes beyond keyword matching to understand the meaning behind queries and documents:
+
+- **Semantic Understanding**: Captures the intent and context of queries
+- **Contextual Relevance**: Identifies truly relevant content, not just keyword matches
+- **Multi-Vector Search**: Combines multiple embedding strategies for better results
+- **Hybrid Retrieval**: Blends semantic and keyword-based approaches
+
+## How Semantic Search Works
+
+Agentset uses advanced embedding models to convert text into vector representations that capture semantic meaning:
+
+<img
+  className="block mx-auto"
+  src="/images/Search.png"
+  alt="Semantic Search Diagram"
+  width="80%"
+/>
+
+1. **Document Embedding**: Documents are processed and embedded during upload
+2. **Query Understanding**: User queries are analyzed for intent and context
+3. **Vector Similarity**: The system finds documents with similar vector representations
+4. **Re-ranking**: Results are refined based on multiple relevance factors
+5. **Contextual Retrieval**: The most relevant passages are extracted from matching documents
+
+## Embedding Models
+
+Agentset uses state-of-the-art embedding models to represent text:
+
+<CardGroup cols={2}>
+  <Card title="Default Embedding" icon="star">
+    Our standard embedding model is optimized for general document understanding and retrieval
+  </Card>
+  <Card title="Domain-Specific Models" icon="microscope">
+    We offer specialized models for legal, medical, financial, and technical content
+  </Card>
+  <Card title="Multilingual Support" icon="language">
+    Our models support 100+ languages with cross-lingual semantic understanding
+  </Card>
+  <Card title="Custom Fine-tuning" icon="sliders">
+    Enterprise customers can fine-tune embedding models on their specific document corpus
+  </Card>
+</CardGroup>
+
+## Search Capabilities
+
+<AccordionGroup>
+  <Accordion title="Hybrid Search">
+    Agentset combines semantic search with traditional keyword-based methods for optimal results:
+    
+    - **BM25 Algorithm**: Proven keyword-matching algorithm enhanced with semantic understanding
+    - **Lexical Matching**: Identify exact terms and phrases when needed
+    - **Adaptive Weighting**: Dynamically adjust the importance of semantic vs. keyword matching
+    
+    This hybrid approach ensures you get the benefits of semantic understanding while still finding exact matches when appropriate.
+  </Accordion>
+  
+  <Accordion title="Contextual Retrieval">
+    Instead of returning entire documents, Agentset retrieves the most relevant passages:
+    
+    - **Passage Identification**: Locates specific sections that answer the query
+    - **Context Preservation**: Includes surrounding context for better understanding
+    - **Multi-passage Synthesis**: Combines information from multiple passages when needed
+    
+    This focused approach ensures more precise answers and better citation of sources.
+  </Accordion>
+  
+  <Accordion title="Search Filters">
+    Refine search results with metadata filters:
+    
+    - **Document Type**: Filter by file format or document category
+    - **Date Range**: Limit results to specific time periods
+    - **Author/Owner**: Find documents by specific creators
+    - **Custom Metadata**: Filter using your own document metadata fields
+    
+    Combine these filters with semantic search for highly targeted results.
+  </Accordion>
+</AccordionGroup>
+
+## Direct Search API
+
+In addition to agent-based queries, you can directly access Agentset's semantic search capabilities:
+
+```javascript
+// Perform a semantic search across documents
+const searchResults = await agentset.documents.search({
+  agentId: agent.id,
+  query: "renewable energy market growth projections",
+  options: {
+    // Number of results to return
+    limit: 10,
+    // Minimum similarity score (0-1)
+    minScore: 0.7,
+    // Include document metadata
+    includeMetadata: true,
+    // Filters
+    filters: {
+      // Only documents from the last year
+      dateRange: {
+        after: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+      },
+      // Only specific document types
+      documentTypes: ["pdf", "docx"],
+    }
+  }
+});
+
+// Process search results
+for (const result of searchResults.results) {
+  console.log(`Document: ${result.document.title}`);
+  console.log(`Score: ${result.score}`);
+  console.log(`Passage: ${result.passage}`);
+}
+```
+
+## Customizing Search Behavior
+
+You can configure how search works for your agents:
+
+```javascript
+const agent = await agentset.agents.create({
+  name: "Research Agent",
+  description: "Analyzes market research documents",
+  options: {
+    search: {
+      // The embedding model to use
+      embeddingModel: "agentset/text-embedding-v2",
+      // Whether to use hybrid search (combine semantic and keyword)
+      useHybridSearch: true,
+      // Weight of semantic vs. keyword matching (0-1)
+      semanticWeight: 0.7,
+      // Default number of results to retrieve
+      defaultResultLimit: 20,
+      // Whether to enable passage-level search
+      enablePassageSearch: true,
+      // Length of passages for retrieval
+      passageLength: 500,
+    }
+  }
+});
+```

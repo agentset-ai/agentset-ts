@@ -1,0 +1,166 @@
+---
+title: 'Parsing'
+description: 'Extract content, metadata, and structure from various file formats'
+---
+
+## Document Parsing
+
+Agentset's document parsing capabilities convert raw document files into structured, machine-readable content:
+
+- **Text Extraction**: Clean extraction of text content from various formats
+- **Structure Preservation**: Retention of document structure (headings, lists, tables)
+- **Metadata Extraction**: Automatic capture of document metadata
+- **Content Normalization**: Consistent formatting across document types
+
+## Supported Formats
+
+Agentset can parse and extract content from a wide range of document formats:
+
+<CardGroup cols={2}>
+  <Card title="PDF Documents" icon="file-pdf">
+    Extract text, tables, and structure from PDFs, including scanned documents via OCR
+  </Card>
+  <Card title="Office Documents" icon="file-word">
+    Process Microsoft Office files (Word, Excel, PowerPoint) and OpenDocument formats
+  </Card>
+  <Card title="Web Content" icon="globe">
+    Parse HTML, Markdown, and other web-based content with structure preservation
+  </Card>
+  <Card title="Text Formats" icon="file-lines">
+    Handle plain text, CSV, JSON, XML, and other structured text formats
+  </Card>
+  <Card title="Images with Text" icon="image">
+    Extract text from images using OCR technology
+  </Card>
+</CardGroup>
+
+## Parsing Pipeline
+
+<Steps>
+  <Step title="Document Loading">
+    The raw document file is loaded and its format is detected
+  </Step>
+  <Step title="Text Extraction">
+    Content is extracted using format-specific parsers
+  </Step>
+  <Step title="Structure Analysis">
+    Document structure is analyzed and preserved (headings, paragraphs, lists, tables)
+  </Step>
+  <Step title="Metadata Extraction">
+    Document metadata is captured (title, author, date, etc.)
+  </Step>
+  <Step title="Content Normalization">
+    Text is normalized and cleaned for consistent processing
+  </Step>
+</Steps>
+
+## PDF Processing
+
+Agentset's PDF processing includes advanced capabilities:
+
+<img
+  className="block mx-auto"
+  src="/images/HighAccuracy.png"
+  alt="PDF Parsing Visualization"
+  width="70%"
+/>
+
+- **Layout Analysis**: Preserves multi-column layouts and complex page structures
+- **Table Extraction**: Converts tables into structured data
+- **OCR Integration**: Processes scanned documents and images within PDFs
+- **Form Recognition**: Extracts data from PDF forms
+- **Footnote Handling**: Properly processes footnotes and references
+
+## Advanced Parsing Features
+
+<AccordionGroup>
+  <Accordion title="OCR (Optical Character Recognition)">
+    Agentset includes built-in OCR capabilities for:
+    
+    - Scanned documents
+    - Image-based PDFs
+    - Images with text content
+    - Documents with embedded images containing text
+    
+    The OCR engine supports multiple languages and handles various image qualities.
+  </Accordion>
+  
+  <Accordion title="Table Extraction">
+    Tables in documents are:
+    
+    - Recognized and extracted as structured data
+    - Preserved with row and column relationships
+    - Converted to machine-readable formats
+    - Accessible for querying in their structured form
+    
+    This enables agents to answer questions about tabular data accurately.
+  </Accordion>
+  
+  <Accordion title="Metadata Processing">
+    Agentset automatically extracts:
+    
+    - Document properties (title, author, creation date)
+    - File metadata
+    - Custom metadata fields
+    - Embedded metadata (like PDF XMP data)
+    
+    You can also add custom metadata to documents during upload.
+  </Accordion>
+</AccordionGroup>
+
+## Parsing Configuration
+
+When uploading documents, you can configure parsing behavior:
+
+```javascript
+const uploadResponse = await agentset.documents.upload({
+  agentId: agent.id,
+  files: [
+    {
+      name: "annual-report-2024.pdf",
+      content: fs.readFileSync('./annual-report-2024.pdf'),
+    }
+  ],
+  options: {
+    parsing: {
+      // Enable OCR for scanned documents
+      ocrEnabled: true,
+      // Languages to use for OCR
+      ocrLanguages: ["en", "fr", "de"],
+      // Extract and process tables
+      extractTables: true,
+      // Extract document metadata
+      extractMetadata: true,
+      // Custom parsing settings for PDFs
+      pdf: {
+        // Extract images from PDF
+        extractImages: true,
+        // Process form fields
+        extractForms: true,
+      }
+    }
+  }
+});
+```
+
+## Custom Document Processors
+
+For enterprise customers, Agentset supports custom document processors for specialized formats:
+
+```javascript
+// Register a custom document processor
+await agentset.documents.registerProcessor({
+  name: "my-custom-format-processor",
+  fileTypes: ["*.mcf"],
+  processorConfig: {
+    // Custom processor configuration
+    extractionMethod: "pattern-based",
+    patterns: [
+      { field: "title", pattern: "TITLE:\\s*(.+)" },
+      { field: "author", pattern: "AUTHOR:\\s*(.+)" },
+    ]
+  }
+});
+```
+
+This allows for processing proprietary or industry-specific document formats.

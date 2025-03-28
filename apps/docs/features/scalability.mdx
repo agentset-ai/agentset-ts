@@ -1,0 +1,139 @@
+---
+title: 'Scalability'
+description: 'Process and analyze large datasets in multiple formats'
+---
+
+## Enterprise-Grade Scalability
+
+Agentset is designed to handle document collections of any size, from a few files to millions of documents:
+
+- **High Volume Processing**: Efficiently handle large document collections
+- **Multi-Format Support**: Process TXT, PDF, DOCX, HTML, Markdown, and more
+- **Distributed Processing**: Scale horizontally across computing resources
+- **Incremental Updates**: Add or update documents without reprocessing the entire corpus
+
+## Supported Document Formats
+
+<CardGroup cols={3}>
+  <Card title="PDF" icon="file-pdf">
+    Process text, tables, and structure from PDF documents
+  </Card>
+  <Card title="Office" icon="file-word">
+    Microsoft Word, Excel, PowerPoint, and OpenDocument formats
+  </Card>
+  <Card title="Web Content" icon="globe">
+    HTML, Markdown, and other web-based content formats
+  </Card>
+  <Card title="Text" icon="file-lines">
+    Plain text, CSV, JSON, YAML, and XML documents
+  </Card>
+  <Card title="Images" icon="image">
+    Extract text from images using OCR technology
+  </Card>
+  <Card title="Custom" icon="puzzle-piece">
+    Support for custom parsers for proprietary formats
+  </Card>
+</CardGroup>
+
+## Performance Benchmarks
+
+<Tabs>
+  <Tab title="Document Processing">
+    ```markdown
+    | Document Count | Total Size | Processing Time |
+    | -------------- | ---------- | --------------- |
+    | 1,000          | 500MB      | ~2 minutes      |
+    | 10,000         | 5GB        | ~15 minutes     |
+    | 100,000        | 50GB       | ~2 hours        |
+    | 1,000,000      | 500GB      | ~18 hours       |
+    ```
+    
+    *Times are approximate and depend on document complexity and server configuration*
+  </Tab>
+  <Tab title="Query Performance">
+    ```markdown
+    | Document Count | Avg. Query Time | Complex Query Time |
+    | -------------- | --------------- | ------------------ |
+    | 1,000          | <100ms          | <500ms             |
+    | 10,000         | <150ms          | <800ms             |
+    | 100,000        | <250ms          | <1.5s              |
+    | 1,000,000      | <500ms          | <3s                |
+    ```
+    
+    *Times are for vector search; agent processing adds additional time*
+  </Tab>
+</Tabs>
+
+## Architecture Overview
+
+Agentset's scalable architecture ensures performance at any scale:
+
+<img
+  className="block mx-auto"
+  src="/images/ProgressIndicator.png"
+  alt="Scalability Architecture"
+  width="90%"
+/>
+
+Key components include:
+
+1. **Distributed Processing Pipeline**: Parallel document processing across multiple workers
+2. **Vector Database**: High-performance storage and retrieval of document embeddings
+3. **Content Store**: Efficient storage of document content and metadata
+4. **Processing Queues**: Asynchronous task management for document processing
+5. **Auto-scaling Resources**: Dynamic allocation of resources based on workload
+
+## Self-Hosting for Scale
+
+For organizations with large document collections or specific security requirements, Agentset offers self-hosted deployment options:
+
+```bash
+# Deploy Agentset using Docker Compose
+git clone https://github.com/agentsetai/agentset
+cd agentset
+docker-compose up -d
+```
+
+Self-hosted deployments offer:
+
+- **Complete Data Control**: Keep all documents and processing within your infrastructure
+- **Custom Scaling**: Configure resources based on your specific needs
+- **Integration**: Connect with existing document management systems
+- **Security**: Implement your organization's security protocols
+
+## Optimizing for Large Document Sets
+
+For very large document collections, consider these optimization strategies:
+
+<AccordionGroup>
+  <Accordion title="Document Preprocessing">
+    - **Filtering**: Remove irrelevant documents before processing
+    - **Deduplication**: Identify and remove duplicate content
+    - **Compression**: Reduce storage requirements for rarely accessed documents
+    - **Prioritization**: Process high-value documents first
+  </Accordion>
+  
+  <Accordion title="Chunking Strategies">
+    - **Semantic Chunking**: Split documents based on content meaning, not just size
+    - **Hierarchical Chunking**: Create multi-level chunks for better retrieval
+    - **Metadata Enhancement**: Add rich metadata to improve search relevance
+    - **Custom Chunk Sizes**: Adjust chunk size based on document type and content
+  </Accordion>
+  
+  <Accordion title="Index Optimization">
+    - **Partition Strategies**: Divide indexes by date, document type, or other criteria
+    - **Index Compression**: Optimize vector storage for better performance
+    - **Caching Layers**: Implement result caching for frequent queries
+    - **Query Routing**: Direct queries to the most relevant index partitions
+  </Accordion>
+</AccordionGroup>
+
+## Enterprise Features
+
+For enterprise customers with extreme scale requirements, Agentset offers:
+
+- **Dedicated Infrastructure**: Custom-sized deployments based on document volume
+- **SLA-backed Performance**: Guaranteed query response times
+- **Advanced Monitoring**: Real-time visibility into processing and query performance
+- **Auto-scaling**: Dynamically adjust resources based on usage patterns
+- **24/7 Support**: Enterprise-grade support for mission-critical deployments

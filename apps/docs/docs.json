@@ -1,0 +1,140 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Agentset",
+  "colors": {
+    "primary": "#101828",
+    "light": "#fff",
+    "dark": "#060B14"
+  },
+  "theme": "mint",
+  "favicon": "/images/favicon.ico",
+  "api": {
+    "openapi": "api-reference/openapi.json"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart",
+          "examples"
+        ]
+      },
+      {
+        "group": "Features",
+        "pages": [
+          "features/agentic-rag",
+          "features/deep-research",
+          "features/citations",
+          "features/semantic-search",
+          "features/scalability"
+        ]
+      },
+      {
+        "group": "Core Components",
+        "pages": [
+          "components/parsing",
+          "components/chunking",
+          "components/embedding"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api-reference/namespaces",
+          "api-reference/ingest-jobs",
+          "api-reference/documents"
+        ]
+      },
+      {
+        "group": "API Endpoints",
+        "pages": [
+          {
+            "group": "Namespaces",
+            "pages": [
+              "api-endpoints/namespaces/overview",
+              "api-reference/namespaces/list",
+              "api-reference/namespaces/get",
+              "api-reference/namespaces/create",
+              "api-reference/namespaces/update",
+              "api-reference/namespaces/delete"
+            ]
+          },
+          {
+            "group": "Ingest Jobs",
+            "pages": [
+              "api-endpoints/ingest-jobs/overview",
+              "api-reference/ingest-jobs/list",
+              "api-reference/ingest-jobs/get",
+              "api-reference/ingest-jobs/create",
+              "api-reference/ingest-jobs/delete"
+            ]
+          },
+          {
+            "group": "Documents",
+            "pages": [
+              "api-endpoints/documents/overview",
+              "api-reference/documents/list",
+              "api-reference/documents/get",
+              "api-reference/documents/delete"
+            ]
+          },
+          {
+            "group": "Search",
+            "pages": [
+              "api-endpoints/search/overview",
+              "api-endpoints/search/api-reference",
+              "api-reference/search"
+            ]
+          },
+          {
+            "group": "Chat",
+            "pages": [
+              "api-endpoints/chat/overview",
+              "api-endpoints/chat/api-reference",
+              "api-reference/chat"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/agentset-ai",
+          "icon": "github"
+        },
+        {
+          "anchor": "Pricing",
+          "href": "https://agentset.ai/pricing",
+          "icon": "credit-card"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:contact@agentset.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "https://agentset.ai/#"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/agentsetai",
+      "linkedin": "https://linkedin.com/company/agentset"
+    }
+  }
+}

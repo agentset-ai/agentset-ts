@@ -1,0 +1,176 @@
+---
+title: 'Chunking'
+description: 'Break documents into smaller, structured pieces for better retrieval and reasoning'
+---
+
+## Document Chunking
+
+Chunking is the process of breaking down documents into smaller, semantically meaningful pieces:
+
+- **Semantic Chunking**: Create chunks based on content meaning rather than arbitrary size
+- **Structure-Aware**: Respect document structure like headings, paragraphs, and sections
+- **Content Preservation**: Maintain the context and relationships between chunks
+- **Metadata Enhancement**: Add metadata to chunks for improved retrieval
+
+## Why Chunking Matters
+
+Effective chunking is critical for:
+
+<CardGroup cols={2}>
+  <Card title="Retrieval Precision" icon="bullseye">
+    Return the most relevant content to user queries instead of entire documents
+  </Card>
+  <Card title="Context Management" icon="sitemap">
+    Maintain appropriate context for LLM processing while avoiding token limitations
+  </Card>
+  <Card title="Reasoning Quality" icon="brain">
+    Allow agents to focus on the most relevant information for better reasoning
+  </Card>
+  <Card title="Processing Efficiency" icon="bolt">
+    Process only what's needed rather than entire documents
+  </Card>
+</CardGroup>
+
+## Chunking Strategies
+
+Agentset employs intelligent chunking strategies:
+
+<Tabs>
+  <Tab title="Semantic Chunking">
+    <img
+      className="block mx-auto"
+      src="/images/ProgressIndicator.png"
+      alt="Semantic Chunking Diagram"
+      width="70%"
+    />
+    
+    Semantic chunking creates chunks based on the meaning and natural divisions in content:
+    
+    - **Topic Detection**: Identify natural topic boundaries in text
+    - **Semantic Coherence**: Ensure each chunk contains semantically related content
+    - **Context Windows**: Maintain appropriate context windows for each chunk
+    - **Hierarchical Structure**: Preserve nested relationships between content sections
+  </Tab>
+  
+  <Tab title="Structure-Based Chunking">
+    Structure-based chunking uses document structure to guide the chunking process:
+    
+    - **Heading-Based**: Create chunks based on section headings
+    - **Paragraph-Based**: Use paragraphs or groups of related paragraphs as chunks
+    - **List Items**: Process list items as individual chunks or groups
+    - **Tables**: Handle tables as structured data chunks
+    
+    This approach works well for well-structured documents like technical documentation, reports, and scholarly papers.
+  </Tab>
+  
+  <Tab title="Hybrid Chunking">
+    Hybrid chunking combines multiple approaches for optimal results:
+    
+    - **Structure Priority**: Use document structure when available
+    - **Semantic Fallback**: Apply semantic chunking when structure is insufficient
+    - **Size Constraints**: Apply size limits to ensure processability
+    - **Overlap Strategy**: Create overlapping chunks to preserve context
+    
+    This balanced approach works well across varied document types and ensures consistent retrieval quality.
+  </Tab>
+</Tabs>
+
+## Chunking Configuration
+
+When creating a namespace, you can configure chunking behavior:
+
+```javascript
+const namespace = await agentset.namespaces.create({
+  name: "Technical Documentation",
+  description: "Contains technical documentation and guides",
+  options: {
+    chunking: {
+      // Chunking strategy: "semantic", "structure", or "hybrid"
+      strategy: "hybrid",
+      // Target chunk size (in tokens)
+      targetSize: 1000,
+      // Chunk overlap (in tokens)
+      overlap: 200,
+      // Preserve headings with content
+      preserveHeadings: true,
+      // Keep sections together when possible
+      preserveSections: true,
+      // Keep lists together when appropriate
+      preserveLists: true,
+      // Special handling for tables
+      tableStrategy: "as_unit",
+    }
+  }
+});
+```
+
+## Advanced Chunking Features
+
+<AccordionGroup>
+  <Accordion title="Hierarchical Chunking">
+    Hierarchical chunking creates multiple levels of chunks:
+    
+    - **Parent Chunks**: Larger document sections (chapters, major sections)
+    - **Child Chunks**: Smaller subsections within parent chunks
+    - **Relationship Tracking**: Maintains parent-child relationships between chunks
+    
+    This approach enables:
+    - More precise retrieval by targeting specific granularity levels
+    - Better context preservation by accessing parent chunks when needed
+    - Improved navigation of document structure
+  </Accordion>
+  
+  <Accordion title="Metadata-Enhanced Chunks">
+    Each chunk is enhanced with metadata to improve retrieval:
+    
+    - **Position Metadata**: Where the chunk appears in the document
+    - **Structural Metadata**: Heading hierarchy, section info, etc.
+    - **Content Type**: Text, table, list, code block, etc.
+    - **Named Entities**: Important entities mentioned in the chunk
+    
+    This metadata helps the retrieval system find more relevant chunks based on query context.
+  </Accordion>
+  
+  <Accordion title="Dynamic Chunking">
+    Dynamic chunking adjusts chunk size and strategy based on content:
+    
+    - **Content-Aware Sizing**: Use smaller chunks for dense technical content, larger for narrative
+    - **Format-Based Adaptation**: Different strategies for different document types
+    - **Query-Time Adjustment**: Adjust chunking based on query characteristics
+    
+    This adaptive approach ensures optimal processing across diverse document collections.
+  </Accordion>
+</AccordionGroup>
+
+## Custom Chunking Rules
+
+Enterprise customers can define custom chunking rules:
+
+```javascript
+// Define custom chunking rules for specific document types
+await agentset.namespaces.setChunkingRules({
+  namespaceId: namespace.id,
+  rules: [
+    {
+      // Apply to legal contracts
+      documentType: "legal",
+      // Use structure-based chunking
+      strategy: "structure",
+      // Keep clauses together
+      preserveClauses: true,
+      // Special handling for definitions
+      definitionsStrategy: "separate_chunk",
+    },
+    {
+      // Apply to financial reports
+      documentType: "financial",
+      // Custom chunking for financial tables
+      tableStrategy: "semantic_rows",
+      // Preserve footnotes with references
+      preserveFootnotes: true,
+    }
+  ]
+});
+```
+
+These custom rules ensure optimal processing for domain-specific documents.

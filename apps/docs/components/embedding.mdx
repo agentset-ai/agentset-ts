@@ -1,0 +1,217 @@
+---
+title: 'Embedding'
+description: 'Embed your knowledge base using advanced embedding models for efficient retrieval'
+---
+
+## Document Embedding
+
+Document embedding is the process of converting text into vector representations that capture semantic meaning:
+
+- **Vector Representation**: Convert text to high-dimensional vectors
+- **Semantic Capture**: Encode meaning and context, not just keywords
+- **Efficient Retrieval**: Enable fast similarity search across large document collections
+- **Cross-Modal Understanding**: Connect text with other modalities like images
+
+## Embedding Models
+
+Agentset uses state-of-the-art embedding models:
+
+<CardGroup cols={2}>
+  <Card title="General Purpose Embeddings" icon="star">
+    Our default embedding model works well across diverse content types
+  </Card>
+  <Card title="Domain-Specific Models" icon="microscope">
+    Specialized models for legal, medical, financial, and technical content
+  </Card>
+  <Card title="Multilingual Embeddings" icon="language">
+    Support for 100+ languages with cross-lingual semantic understanding
+  </Card>
+  <Card title="Hybrid Embeddings" icon="layer-group">
+    Combination of multiple embedding approaches for optimal retrieval
+  </Card>
+</CardGroup>
+
+## How Document Embedding Works
+
+<img
+  className="block mx-auto"
+  src="/images/HighAccuracy.png"
+  alt="Embedding Process"
+  width="80%"
+/>
+
+<Steps>
+  <Step title="Chunk Processing">
+    Document chunks are prepared for embedding
+  </Step>
+  <Step title="Text Normalization">
+    Text is normalized to ensure consistent processing
+  </Step>
+  <Step title="Embedding Generation">
+    Chunks are passed through embedding models to generate vectors
+  </Step>
+  <Step title="Vector Storage">
+    Embeddings are stored in a vector database for efficient retrieval
+  </Step>
+  <Step title="Index Building">
+    Indexes are built to enable fast similarity search
+  </Step>
+</Steps>
+
+## Embedding Dimensions
+
+Agentset offers embedding models with different dimensions to balance performance and accuracy:
+
+<Tabs>
+  <Tab title="Standard (768d)">
+    Our standard embedding model with 768 dimensions offers a good balance of quality and performance:
+    
+    - Suitable for most general document collections
+    - Captures nuanced semantic relationships
+    - Efficient storage and query performance
+    - Good multilingual performance
+  </Tab>
+  
+  <Tab title="High-Resolution (1536d)">
+    For applications requiring maximum accuracy, our 1536-dimension model offers:
+    
+    - Enhanced semantic precision
+    - Better handling of subtle distinctions
+    - Improved performance on technical and specialized content
+    - Superior cross-lingual capabilities
+    
+    This model is recommended for technical documentation, scientific literature, and other specialized content.
+  </Tab>
+  
+  <Tab title="Compact (384d)">
+    For applications where efficiency is paramount, our 384-dimension model provides:
+    
+    - Faster processing and retrieval
+    - Reduced storage requirements
+    - Suitable for large-scale deployments
+    - Good performance on straightforward content
+    
+    This model is ideal for applications with very large document collections where query speed is critical.
+  </Tab>
+</Tabs>
+
+## Configuring Embeddings
+
+When creating a namespace, you can configure embedding behavior:
+
+```javascript
+const namespace = await agentset.namespaces.create({
+  name: "Technical Documentation",
+  description: "Contains technical documentation and guides",
+  options: {
+    embedding: {
+      // Embedding model to use
+      model: "agentset/text-embedding-v2",
+      // Whether to use hybrid search (combining embedding with lexical search)
+      useHybridSearch: true,
+      // Multilingual support
+      enableMultilingual: true,
+      // Languages to optimize for
+      languages: ["en", "es", "fr", "de"],
+      // Document-level embeddings (in addition to chunk embeddings)
+      generateDocumentEmbeddings: true,
+    }
+  }
+});
+```
+
+## Advanced Embedding Features
+
+<AccordionGroup>
+  <Accordion title="Multi-Vector Indexing">
+    Multi-vector indexing stores multiple embedding vectors for each document chunk:
+    
+    - **Multiple Representations**: Different embedding models capture different semantic aspects
+    - **Aspect-Specific Embeddings**: Generate embeddings focused on different aspects of content
+    - **Complementary Approaches**: Combine strengths of different embedding techniques
+    
+    This approach improves retrieval accuracy by capturing different semantic dimensions of the same content.
+  </Accordion>
+  
+  <Accordion title="Hierarchical Embeddings">
+    Hierarchical embeddings create representations at multiple levels:
+    
+    - **Document-Level**: Capture the overall meaning of entire documents
+    - **Section-Level**: Represent major document sections
+    - **Chunk-Level**: Detailed embeddings of specific chunks
+    
+    This hierarchical approach enables both broad topical matching and specific detail retrieval.
+  </Accordion>
+  
+  <Accordion title="Cross-Modal Embeddings">
+    For documents with mixed content types, cross-modal embeddings connect:
+    
+    - **Text and Images**: Connect textual descriptions with visual content
+    - **Text and Tables**: Link narrative text with tabular data
+    - **Text and Code**: Associate documentation with code examples
+    
+    This enables more comprehensive understanding and retrieval across mixed-format documents.
+  </Accordion>
+</AccordionGroup>
+
+## Vector Database Integration
+
+Agentset uses high-performance vector databases to store and retrieve embeddings:
+
+```javascript
+// For self-hosted deployments, configure vector database
+await agentset.configure({
+  vectorDatabase: {
+    // Vector database type: "postgres", "pinecone", "qdrant", "weaviate", etc.
+    type: "postgres",
+    // Connection details
+    connection: {
+      host: "localhost",
+      port: 5432,
+      database: "agentset",
+      user: "postgres",
+      password: process.env.DB_PASSWORD,
+    },
+    // Index configuration
+    indexConfig: {
+      // Index type: "hnsw", "ivf", etc.
+      type: "hnsw",
+      // Parameters for the index
+      parameters: {
+        m: 16,
+        efConstruction: 100,
+      }
+    }
+  }
+});
+```
+
+## Custom Embedding Models
+
+Enterprise customers can use custom embedding models or fine-tune existing ones:
+
+```javascript
+// Register a custom embedding model
+await agentset.embeddings.registerModel({
+  name: "custom-domain-model",
+  // Model source: "huggingface", "openai", "custom"
+  source: "huggingface",
+  // Model identifier
+  modelId: "company/domain-specific-embedding-model",
+  // API configuration for hosted models
+  apiConfig: {
+    apiKey: process.env.HUGGINGFACE_API_KEY,
+    apiUrl: "https://api-inference.huggingface.co/pipeline/feature-extraction",
+  }
+});
+
+// Use the custom model
+const namespace = await agentset.namespaces.create({
+  name: "Domain-Specific Knowledge Base",
+  options: {
+    embedding: {
+      model: "custom-domain-model",
+    }
+  }
+});
+```

@@ -1,0 +1,3021 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AgentsetAPI",
+    "description": "Agentset is agentic rag-as-a-service",
+    "version": "0.0.1",
+    "contact": {
+      "name": "Agentset Support",
+      "email": "support@agentset.ai",
+      "url": "https://api.agentset.ai/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.agentset.ai",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/v1/namespace": {
+      "get": {
+        "operationId": "listNamespaces",
+        "x-speakeasy-name-override": "list",
+        "summary": "Retrieve a list of namespaces",
+        "description": "Retrieve a list of namespaces for the authenticated organization.",
+        "tags": [
+          "Namespaces"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The retrieved namespaces",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NamespaceSchema"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createNamespace",
+        "x-speakeasy-name-override": "create",
+        "x-speakeasy-usage-example": true,
+        "summary": "Create a namespace.",
+        "description": "Create a namespace for the authenticated organization.",
+        "tags": [
+          "Namespaces"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 48
+                  },
+                  "embeddingConfig": {
+                    "$ref": "#/components/schemas/EmbeddingConfigSchema"
+                  },
+                  "vectorStoreConfig": {
+                    "$ref": "#/components/schemas/VectorStoreSchema"
+                  }
+                },
+                "required": [
+                  "name",
+                  "slug"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/NamespaceSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}": {
+      "get": {
+        "operationId": "getNamespace",
+        "x-speakeasy-name-override": "get",
+        "summary": "Retrieve a namespace",
+        "description": "Retrieve the info for a namespace.",
+        "tags": [
+          "Namespaces"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to retrieve.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to retrieve."
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The retrieved namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/NamespaceSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateNamespace",
+        "x-speakeasy-name-override": "update",
+        "x-speakeasy-max-method-params": 2,
+        "summary": "Update a namespace.",
+        "description": "Update a namespace for the authenticated organization. If there is no change, return it as it is.",
+        "tags": [
+          "Namespaces"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to update.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to update."
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 48
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/NamespaceSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteNamespace",
+        "x-speakeasy-name-override": "delete",
+        "x-speakeasy-max-method-params": 1,
+        "summary": "Delete a namespace.",
+        "description": "Delete a namespace for the authenticated organization. This will delete all the data associated with the namespace.",
+        "tags": [
+          "Namespaces"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to delete.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to delete."
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The deleted namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/NamespaceSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}/ingest-jobs": {
+      "get": {
+        "operationId": "listIngestJobs",
+        "x-speakeasy-name-override": "list",
+        "x-speakeasy-pagination": {
+          "type": "cursor",
+          "inputs": [
+            {
+              "name": "cursor",
+              "in": "parameters",
+              "type": "cursor"
+            }
+          ],
+          "outputs": {
+            "nextCursor": "$.pagination.nextCursor"
+          }
+        },
+        "summary": "Retrieve a list of ingest jobs",
+        "description": "Retrieve a paginated list of ingest jobs for the authenticated organization.",
+        "tags": [
+          "Ingest Jobs"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to create the ingest job for.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to create the ingest job for."
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "statuses",
+            "description": "Statuses to filter by.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/IngestJobStatusSchema"
+              },
+              "description": "Statuses to filter by."
+            }
+          },
+          {
+            "in": "query",
+            "name": "orderBy",
+            "description": "The field to order by. Default is `createdAt`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt"
+              ],
+              "default": "createdAt",
+              "description": "The field to order by. Default is `createdAt`."
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "The sort order. Default is `desc`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "description": "The sort order. Default is `desc`."
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "The cursor to paginate by.",
+            "schema": {
+              "type": "string",
+              "description": "The cursor to paginate by."
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursorDirection",
+            "description": "The direction to paginate by.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "forward",
+                "backward"
+              ],
+              "default": "forward",
+              "description": "The direction to paginate by."
+            }
+          },
+          {
+            "in": "query",
+            "name": "perPage",
+            "description": "The number of records to return per page.",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30,
+              "description": "The number of records to return per page."
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The retrieved ingest jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IngestJobSchema"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "nextCursor": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "nextCursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createIngestJob",
+        "x-speakeasy-name-override": "create",
+        "summary": "Create an ingest job",
+        "description": "Create an ingest job for the authenticated organization.",
+        "tags": [
+          "Ingest Jobs"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to create the ingest job for.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to create the ingest job for."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payload": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "TEXT"
+                            ]
+                          },
+                          "text": {
+                            "type": "string",
+                            "description": "The text to ingest."
+                          },
+                          "name": {
+                            "type": "string",
+                            "nullable": true,
+                            "default": null,
+                            "description": "The name of the ingest job."
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "text"
+                        ],
+                        "title": "Text Payload"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "FILE"
+                            ]
+                          },
+                          "fileUrl": {
+                            "type": "string",
+                            "description": "The URL of the file to ingest."
+                          },
+                          "name": {
+                            "type": "string",
+                            "nullable": true,
+                            "default": null,
+                            "description": "The name of the ingest job."
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "fileUrl"
+                        ],
+                        "title": "URL Payload"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "MANAGED_FILE"
+                            ]
+                          },
+                          "key": {
+                            "type": "string",
+                            "description": "The key of the managed file to ingest."
+                          },
+                          "name": {
+                            "type": "string",
+                            "nullable": true,
+                            "default": null,
+                            "description": "The name of the ingest job."
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "key"
+                        ],
+                        "title": "Managed File Payload"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "URLS"
+                            ]
+                          },
+                          "urls": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            "description": "The URLs to ingest."
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "urls"
+                        ],
+                        "title": "URLs Payload"
+                      }
+                    ],
+                    "description": "The ingest job payload."
+                  },
+                  "config": {
+                    "type": "object",
+                    "properties": {
+                      "chunkSize": {
+                        "type": "number",
+                        "description": "Custom chunk size."
+                      },
+                      "chunkOverlap": {
+                        "type": "number",
+                        "description": "Custom chunk overlap."
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "description": "Custom metadata to be added to the ingested documents."
+                      }
+                    },
+                    "description": "The ingest job config."
+                  }
+                },
+                "required": [
+                  "payload"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created ingest job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/IngestJobSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}/ingest-jobs/{jobId}": {
+      "get": {
+        "operationId": "getIngestJobInfo",
+        "x-speakeasy-name-override": "get",
+        "summary": "Retrieve an ingest job",
+        "description": "Retrieve the info for an ingest job.",
+        "tags": [
+          "Ingest Jobs"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to retrieve.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to retrieve."
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "description": "The id of the ingest job to retrieve.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the ingest job to retrieve."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The retrieved ingest job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/IngestJobSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteIngestJob",
+        "x-speakeasy-name-override": "delete",
+        "x-speakeasy-max-method-params": 1,
+        "summary": "Delete an ingest job",
+        "description": "Delete an ingest job for the authenticated organization.",
+        "tags": [
+          "Ingest Jobs"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to delete.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to delete."
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "description": "The id of the ingest job to delete.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the ingest job to delete."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The deleted ingest job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/IngestJobSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}/documents": {
+      "get": {
+        "operationId": "listDocuments",
+        "x-speakeasy-name-override": "list",
+        "x-speakeasy-pagination": {
+          "type": "cursor",
+          "inputs": [
+            {
+              "name": "cursor",
+              "in": "parameters",
+              "type": "cursor"
+            }
+          ],
+          "outputs": {
+            "nextCursor": "$.pagination.nextCursor"
+          }
+        },
+        "summary": "Retrieve a list of documents",
+        "description": "Retrieve a paginated list of documents for the authenticated organization.",
+        "tags": [
+          "Documents"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to create the ingest job for.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to create the ingest job for."
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "statuses",
+            "description": "Statuses to filter by.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/DocumentStatusSchema"
+              },
+              "description": "Statuses to filter by."
+            }
+          },
+          {
+            "in": "query",
+            "name": "orderBy",
+            "description": "The field to order by. Default is `createdAt`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt"
+              ],
+              "default": "createdAt",
+              "description": "The field to order by. Default is `createdAt`."
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "The order to sort by. Default is `desc`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "description": "The order to sort by. Default is `desc`."
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "The cursor to paginate by.",
+            "schema": {
+              "type": "string",
+              "description": "The cursor to paginate by."
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursorDirection",
+            "description": "The direction to paginate by.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "forward",
+                "backward"
+              ],
+              "default": "forward",
+              "description": "The direction to paginate by."
+            }
+          },
+          {
+            "in": "query",
+            "name": "perPage",
+            "description": "The number of records to return per page.",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30,
+              "description": "The number of records to return per page."
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The retrieved ingest jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DocumentSchema"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "nextCursor": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "nextCursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}/documents/{documentId}": {
+      "get": {
+        "operationId": "getDocument",
+        "x-speakeasy-name-override": "get",
+        "summary": "Retrieve a document",
+        "description": "Retrieve the info for a document.",
+        "tags": [
+          "Documents"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to retrieve.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to retrieve."
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "documentId",
+            "description": "The id of the document to retrieve.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the document to retrieve."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The retrieved ingest job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DocumentSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteDocument",
+        "x-speakeasy-name-override": "delete",
+        "x-speakeasy-max-method-params": 1,
+        "summary": "Delete a document",
+        "description": "Delete a document for the authenticated organization.",
+        "tags": [
+          "Documents"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to delete.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to delete."
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "documentId",
+            "description": "The id of the document to delete.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the document to delete."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The deleted document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DocumentSchema"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}/search": {
+      "post": {
+        "operationId": "search",
+        "x-speakeasy-name-override": "search",
+        "summary": "Search a namespace",
+        "description": "Search a namespace for a query.",
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to search.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to search."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "The query to search for."
+                  },
+                  "topK": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 10,
+                    "description": "The number of results to fetch from the vector store. Defaults to `10`."
+                  },
+                  "rerank": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to rerank the results. Defaults to `true`."
+                  },
+                  "rerankLimit": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "The number of results to return after reranking. Defaults to `topK`."
+                  },
+                  "filter": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "A filter to apply to the results."
+                  },
+                  "minScore": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "The minimum score to return."
+                  },
+                  "includeRelationships": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to include relationships in the results. Defaults to `false`."
+                  },
+                  "includeMetadata": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to include metadata in the results. Defaults to `true`."
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The retrieved namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "score": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "text": {
+                            "type": "string"
+                          },
+                          "relationships": {
+                            "type": "object",
+                            "additionalProperties": {}
+                          },
+                          "metadata": {
+                            "type": "object",
+                            "properties": {
+                              "file_directory": {
+                                "type": "string"
+                              },
+                              "filename": {
+                                "type": "string"
+                              },
+                              "filetype": {
+                                "type": "string"
+                              },
+                              "link_texts": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "link_urls": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "languages": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "sequence_number": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "file_directory",
+                              "filename",
+                              "filetype"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "score"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/namespace/{namespaceId}/chat": {
+      "post": {
+        "operationId": "chat",
+        "x-speakeasy-name-override": "chat",
+        "summary": "Chat with a namespace",
+        "description": "Chat with a namespace.",
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "token": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespaceId",
+            "description": "The id of the namespace to chat with.",
+            "schema": {
+              "type": "string",
+              "description": "The id of the namespace to chat with."
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "description": "The tenant id to use for the request. If not provided, the default tenant will be used.",
+            "schema": {
+              "type": "string",
+              "description": "The tenant id to use for the request. If not provided, the default tenant will be used."
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "The query to search for."
+                  },
+                  "topK": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 10,
+                    "description": "The number of results to fetch from the vector store. Defaults to `10`."
+                  },
+                  "rerank": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to rerank the results. Defaults to `true`."
+                  },
+                  "rerankLimit": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "The number of results to return after reranking. Defaults to `topK`."
+                  },
+                  "filter": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "A filter to apply to the results."
+                  },
+                  "minScore": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "The minimum score to return."
+                  },
+                  "includeRelationships": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to include relationships in the results. Defaults to `false`."
+                  },
+                  "includeMetadata": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to include metadata in the results. Defaults to `true`."
+                  },
+                  "systemPrompt": {
+                    "type": "string",
+                    "default": "\nYou are Digna AI, a helpful research assistant built by Digna. Your task is to deliver an accurate and cited response to a user's query, drawing from the given search results. The search results are not visible to the user so you MUST include relevant portions of the results in your response. Your answer must be of high-quality, and written by an expert using an unbiased and journalistic tone. It is EXTREMELY IMPORTANT to directly answer the query. NEVER say \"based on the search results\". Your answer must be written in the same language as the query, even if the search results language is different.\n\nYou MUST cite the most relevant search results that answer the query. Do not mention any irrelevant results. You MUST ADHERE to the following instructions for citing search results: - to cite a search result, enclose its index located above the summary with brackets at the end of the corresponding sentence, for example \"Ice is less dense than water12.\" or \"Paris is the capital of France145.\" - NO SPACE between the last word and the citation, and ALWAYS use brackets. Only use this format to cite search results. NEVER include a References section at the end of your answer. - If you don't know the answer or the premise is incorrect, explain why. If the search results are empty or unhelpful, you MUST inform the user that you were unable to find references in the book and not answer the question.\n\nYou should give direct quotes from the search results and cite them where it improves the answer and gives better context.\n",
+                    "description": "The system prompt to use for the chat. Defaults to the default system prompt."
+                  },
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/MessageSchema"
+                    },
+                    "description": "The messages to use for the chat. Defaults to an empty array."
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to stream the response. Defaults to `false`."
+                  }
+                },
+                "required": [
+                  "query",
+                  "messages"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The retrieved namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "description": "The text of the response."
+                        },
+                        "sources": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "score": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "text": {
+                                "type": "string"
+                              },
+                              "relationships": {
+                                "type": "object",
+                                "additionalProperties": {}
+                              },
+                              "metadata": {
+                                "type": "object",
+                                "properties": {
+                                  "file_directory": {
+                                    "type": "string"
+                                  },
+                                  "filename": {
+                                    "type": "string"
+                                  },
+                                  "filetype": {
+                                    "type": "string"
+                                  },
+                                  "link_texts": {
+                                    "type": "array",
+                                    "items": {}
+                                  },
+                                  "link_urls": {
+                                    "type": "array",
+                                    "items": {}
+                                  },
+                                  "languages": {
+                                    "type": "array",
+                                    "items": {}
+                                  },
+                                  "sequence_number": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "file_directory",
+                                  "filename",
+                                  "filetype"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "score"
+                            ]
+                          },
+                          "description": "The sources of the response."
+                        }
+                      },
+                      "required": [
+                        "text",
+                        "sources"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "token": {
+        "type": "http",
+        "description": "Default authentication mechanism",
+        "scheme": "bearer",
+        "x-speakeasy-example": "AGENTSET_API_KEY"
+      }
+    },
+    "schemas": {
+      "EmbeddingConfigSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "OPENAI"
+                ]
+              },
+              "model": {
+                "type": "string",
+                "enum": [
+                  "text-embedding-3-small",
+                  "text-embedding-3-large"
+                ]
+              },
+              "apiKey": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "provider",
+              "model",
+              "apiKey"
+            ],
+            "title": "OpenAI Embedding Config"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "AZURE_OPENAI"
+                ]
+              },
+              "model": {
+                "type": "string",
+                "enum": [
+                  "text-embedding-3-small",
+                  "text-embedding-3-large"
+                ]
+              },
+              "baseUrl": {
+                "type": "string",
+                "format": "uri",
+                "description": "The base URL of the Azure OpenAI API.",
+                "example": "https://example.openai.azure.com/openai/deployments"
+              },
+              "deployment": {
+                "type": "string",
+                "description": "The deployment name of the Azure OpenAI API."
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "The API key for the Azure OpenAI API."
+              },
+              "apiVersion": {
+                "type": "string",
+                "description": "The API version for the Azure OpenAI API."
+              }
+            },
+            "required": [
+              "provider",
+              "model",
+              "baseUrl",
+              "deployment",
+              "apiKey"
+            ],
+            "title": "Azure Embedding Config"
+          }
+        ],
+        "description": "The embedding model config. If not provided, our managed embedding model will be used. Note: You can't change the embedding model config after the namespace is created."
+      },
+      "VectorStoreSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "PINECONE"
+                ]
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "The API key for the Pinecone index."
+              },
+              "indexHost": {
+                "type": "string",
+                "format": "uri",
+                "description": "The host of the Pinecone index.",
+                "example": "https://example.svc.aped-1234-a56b.pinecone.io"
+              }
+            },
+            "required": [
+              "provider",
+              "apiKey",
+              "indexHost"
+            ],
+            "title": "Pinecone Config"
+          }
+        ],
+        "description": "The vector store config. If not provided, our managed vector store will be used. Note: You can't change the vector store config after the namespace is created."
+      },
+      "NamespaceSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the namespace."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the namespace."
+          },
+          "slug": {
+            "type": "string",
+            "description": "The slug of the namespace."
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "The ID of the organization that owns the namespace."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time the namespace was created."
+          },
+          "embeddingConfig": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmbeddingConfigSchema"
+              }
+            ],
+            "nullable": true,
+            "default": null
+          },
+          "vectorStoreConfig": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VectorStoreSchema"
+              }
+            ],
+            "nullable": true,
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "organizationId",
+          "createdAt",
+          "embeddingConfig",
+          "vectorStoreConfig"
+        ],
+        "title": "Namespace"
+      },
+      "IngestJobSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the ingest job."
+          },
+          "namespaceId": {
+            "type": "string",
+            "description": "The namespace ID of the ingest job."
+          },
+          "tenantId": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "The tenant ID of the ingest job."
+          },
+          "status": {
+            "$ref": "#/components/schemas/IngestJobStatusSchema"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "The error message of the ingest job. Only exists when the status is failed."
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "TEXT"
+                    ]
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "The text to ingest."
+                  },
+                  "name": {
+                    "type": "string",
+                    "nullable": true,
+                    "default": null,
+                    "description": "The name of the ingest job."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text",
+                  "name"
+                ],
+                "title": "Text Payload"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "FILE"
+                    ]
+                  },
+                  "fileUrl": {
+                    "type": "string",
+                    "description": "The URL of the file to ingest."
+                  },
+                  "name": {
+                    "type": "string",
+                    "nullable": true,
+                    "default": null,
+                    "description": "The name of the ingest job."
+                  }
+                },
+                "required": [
+                  "type",
+                  "fileUrl",
+                  "name"
+                ],
+                "title": "URL Payload"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "MANAGED_FILE"
+                    ]
+                  },
+                  "key": {
+                    "type": "string",
+                    "description": "The key of the managed file to ingest."
+                  },
+                  "name": {
+                    "type": "string",
+                    "nullable": true,
+                    "default": null,
+                    "description": "The name of the ingest job."
+                  }
+                },
+                "required": [
+                  "type",
+                  "key",
+                  "name"
+                ],
+                "title": "Managed File Payload"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "URLS"
+                    ]
+                  },
+                  "urls": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "description": "The URLs to ingest."
+                  }
+                },
+                "required": [
+                  "type",
+                  "urls"
+                ],
+                "title": "URLs Payload"
+              }
+            ],
+            "description": "The ingest job payload."
+          },
+          "config": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "chunkSize": {
+                "type": "number",
+                "description": "Custom chunk size."
+              },
+              "chunkOverlap": {
+                "type": "number",
+                "description": "Custom chunk overlap."
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": {},
+                "description": "Custom metadata to be added to the ingested documents."
+              }
+            },
+            "description": "The ingest job config.",
+            "default": null
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time the namespace was created."
+          },
+          "queuedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the ingest job was queued.",
+            "default": null
+          },
+          "preProcessingAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the ingest job was pre-processed.",
+            "default": null
+          },
+          "processingAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the ingest job was processed.",
+            "default": null
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the ingest job was completed.",
+            "default": null
+          },
+          "failedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the ingest job failed.",
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "namespaceId",
+          "tenantId",
+          "status",
+          "error",
+          "payload",
+          "config",
+          "createdAt",
+          "queuedAt",
+          "preProcessingAt",
+          "processingAt",
+          "completedAt",
+          "failedAt"
+        ],
+        "title": "Ingest Job"
+      },
+      "IngestJobStatusSchema": {
+        "type": "string",
+        "enum": [
+          "BACKLOG",
+          "QUEUED",
+          "QUEUED_FOR_RESYNC",
+          "QUEUED_FOR_DELETE",
+          "PRE_PROCESSING",
+          "PROCESSING",
+          "DELETING",
+          "CANCELLING",
+          "COMPLETED",
+          "FAILED",
+          "CANCELLED"
+        ],
+        "description": "The status of the ingest job."
+      },
+      "DocumentSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the document."
+          },
+          "ingestJobId": {
+            "type": "string",
+            "description": "The ingest job ID of the document."
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "A unique external ID."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "The name of the document."
+          },
+          "tenantId": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "The tenant ID of the ingest job."
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatusSchema"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "The error message of the document. Only exists when the status is failed."
+          },
+          "source": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "TEXT"
+                    ]
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "The text to ingest."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "title": "Text Payload"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "FILE"
+                    ]
+                  },
+                  "fileUrl": {
+                    "type": "string",
+                    "description": "The URL of the file to ingest."
+                  }
+                },
+                "required": [
+                  "type",
+                  "fileUrl"
+                ],
+                "title": "URL Payload"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "MANAGED_FILE"
+                    ]
+                  },
+                  "key": {
+                    "type": "string",
+                    "description": "The key of the managed file to ingest."
+                  }
+                },
+                "required": [
+                  "type",
+                  "key"
+                ],
+                "title": "Managed File Payload"
+              }
+            ],
+            "description": "The source of the document."
+          },
+          "properties": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "fileSize": {
+                "type": "number",
+                "description": "The size of the file in bytes."
+              },
+              "mimeType": {
+                "type": "string",
+                "nullable": true,
+                "default": null,
+                "description": "The MIME type of the file."
+              }
+            },
+            "required": [
+              "fileSize",
+              "mimeType"
+            ],
+            "description": "The properties of the document.",
+            "default": null
+          },
+          "totalChunks": {
+            "type": "number",
+            "description": "The total number of chunks."
+          },
+          "totalTokens": {
+            "type": "number",
+            "description": "The total number of tokens."
+          },
+          "totalCharacters": {
+            "type": "number",
+            "description": "The total number of characters."
+          },
+          "totalPages": {
+            "type": "number",
+            "description": "The total number of pages. Will be 0 if the document is not paged (e.g. PDF)."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time the document was created."
+          },
+          "queuedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the document was queued.",
+            "default": null
+          },
+          "preProcessingAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the document was pre-processed.",
+            "default": null
+          },
+          "processingAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the document was processed.",
+            "default": null
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the document was completed.",
+            "default": null
+          },
+          "failedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The date and time the document failed.",
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "ingestJobId",
+          "externalId",
+          "name",
+          "tenantId",
+          "status",
+          "error",
+          "source",
+          "properties",
+          "totalChunks",
+          "totalTokens",
+          "totalCharacters",
+          "totalPages",
+          "createdAt",
+          "queuedAt",
+          "preProcessingAt",
+          "processingAt",
+          "completedAt",
+          "failedAt"
+        ],
+        "title": "Document"
+      },
+      "DocumentStatusSchema": {
+        "type": "string",
+        "enum": [
+          "BACKLOG",
+          "QUEUED",
+          "QUEUED_FOR_RESYNC",
+          "QUEUED_FOR_DELETE",
+          "PRE_PROCESSING",
+          "PROCESSING",
+          "DELETING",
+          "CANCELLING",
+          "COMPLETED",
+          "FAILED",
+          "CANCELLED"
+        ],
+        "description": "The status of the document."
+      },
+      "MessageSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "role",
+              "content"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "assistant"
+                ]
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "role",
+              "content"
+            ]
+          }
+        ],
+        "title": "Message"
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "BadRequest",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "bad_request"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "bad_request"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#bad-request"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Although the HTTP standard specifies \"unauthorized\", semantically this response means \"unauthenticated\". That is, the client must authenticate itself to get the requested response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "Unauthorized",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "unauthorized"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#unauthorized"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "Forbidden",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "forbidden"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#forbidden"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "The server cannot find the requested resource.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "NotFound",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "not_found"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "not_found"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#not-found"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "This response is sent when a request conflicts with the current state of the server.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "Conflict",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "conflict"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "conflict"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#conflict"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "410": {
+        "description": "This response is sent when the requested content has been permanently deleted from server, with no forwarding address.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "InviteExpired",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invite_expired"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "invite_expired"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#invite-expired"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "The request was well-formed but was unable to be followed due to semantic errors.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "UnprocessableEntity",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unprocessable_entity"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "unprocessable_entity"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#unprocessable-entity"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "429": {
+        "description": "The user has sent too many requests in a given amount of time (\"rate limiting\")",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "RateLimitExceeded",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "rate_limit_exceeded"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "rate_limit_exceeded"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#rate-limit_exceeded"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "The server has encountered a situation it does not know how to handle.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "x-speakeasy-name-override": "InternalServerError",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_server_error"
+                      ],
+                      "description": "A short code indicating the error code returned.",
+                      "example": "internal_server_error"
+                    },
+                    "message": {
+                      "x-speakeasy-error-message": true,
+                      "type": "string",
+                      "description": "A human readable explanation of what went wrong.",
+                      "example": "The requested resource was not found."
+                    },
+                    "doc_url": {
+                      "type": "string",
+                      "description": "A link to our documentation with more details about this error code",
+                      "example": "https://docs.agentset.com/api-reference/errors#internal-server_error"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "error"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

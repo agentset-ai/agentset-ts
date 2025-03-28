@@ -1,0 +1,233 @@
+---
+title: 'Examples'
+description: 'Advanced code examples and workflows for Agentset'
+---
+
+# Advanced Usage Examples
+
+This page provides comprehensive examples and workflows to help you leverage Agentset's full capabilities in your applications.
+
+## Financial Analysis Workflow
+
+This example demonstrates analyzing multiple financial documents by creating an agent, uploading multiple reports, and performing comparative analysis:
+
+```javascript
+import { Agentset } from 'agentset';
+import fs from 'fs';
+
+async function financialAnalysis() {
+  // Initialize with environment variable
+  const agentset = new Agentset({
+    apiKey: process.env.AGENTSET_API_KEY,
+  });
+
+  // Create a namespace for financial reports
+  const namespace = await agentset.namespaces.create({
+    name: "Financial Reports",
+    slug: "financial-reports"
+  });
+
+  // Upload documents one by one via ingest jobs
+  // Example: Create an ingest job for annual report
+  const annualReportJob = await agentset.ingestJobs.create({
+    namespaceId: namespace.id,
+    payload: {
+      type: "FILE",
+      fileUrl: "https://example.com/reports/annual-report-2024.pdf",
+      name: "Annual Report 2024"
+    },
+    config: {
+      metadata: {
+        documentType: "annual_report",
+        year: 2024
+      }
+    }
+  });
+
+  // Create ingest job for quarterly report
+  const quarterlyReportJob = await agentset.ingestJobs.create({
+    namespaceId: namespace.id,
+    payload: {
+      type: "FILE",
+      fileUrl: "https://example.com/reports/quarterly-report-q1-2024.pdf",
+      name: "Quarterly Report Q1 2024"
+    },
+    config: {
+      metadata: {
+        documentType: "quarterly_report",
+        year: 2024,
+        quarter: "Q1"
+      }
+    }
+  });
+
+  // Create ingest job for benchmarks
+  const benchmarksJob = await agentset.ingestJobs.create({
+    namespaceId: namespace.id,
+    payload: {
+      type: "FILE",
+      fileUrl: "https://example.com/reports/industry-benchmarks-2024.pdf",
+      name: "Industry Benchmarks 2024"
+    },
+    config: {
+      metadata: {
+        documentType: "benchmarks",
+        year: 2024
+      }
+    }
+  });
+
+  console.log(`Ingest jobs created with IDs: ${annualReportJob.id}, ${quarterlyReportJob.id}, ${benchmarksJob.id}`);
+
+  // Wait for processing to complete (implementation depends on your actual SDK)
+  await agentset.ingestJobs.waitForCompletion(namespace.id);
+
+  // Run comparative analysis using chat
+  const response = await agentset.chat({
+    namespaceId: namespace.id,
+    query: "Compare our Q1 2024 performance with annual projections and industry benchmarks. Highlight areas where we're outperforming or underperforming the industry.",
+    messages: [
+      { 
+        role: "user", 
+        content: "Compare our Q1 2024 performance with annual projections and industry benchmarks. Highlight areas where we're outperforming or underperforming the industry."
+      }
+    ],
+    topK: 15,
+    rerank: true
+  });
+
+  console.log("Analysis:", response.data.text);
+  
+  // Extract key metrics from the response
+  const metricsResponse = await agentset.chat({
+    namespaceId: namespace.id,
+    query: "Extract all financial KPIs from Q1 2024 and format them as a JSON object with metric names as keys and values as numbers.",
+    messages: [
+      {
+        role: "user", 
+        content: "Extract all financial KPIs from Q1 2024 and format them as a JSON object with metric names as keys and values as numbers."
+      }
+    ],
+    topK: 10
+  });
+  
+  const metrics = JSON.parse(metricsResponse.data.text);
+  console.log("Key Metrics:", metrics);
+  
+  return {
+    analysis: response.data.text,
+    metrics: metrics,
+    sources: response.data.sources
+  };
+}
+
+financialAnalysis().catch(console.error);
+```
+
+## Legal Document Review Workflow
+
+This example shows how to use Agentset to analyze legal contracts and extract key provisions:
+
+```javascript
+import { Agentset } from 'agentset';
+import fs from 'fs';
+
+async function reviewContracts() {
+  const agentset = new Agentset({
+    apiKey: process.env.AGENTSET_API_KEY,
+  });
+
+  // Create namespace for legal contracts
+  const namespace = await agentset.namespaces.create({
+    name: "Legal Contracts",
+    slug: "legal-contracts"
+  });
+
+  // Get list of contract files
+  const contractFiles = fs.readdirSync('./contracts')
+    .filter(file => file.endsWith('.pdf'));
+
+  // Upload each contract as a separate ingest job
+  const ingestJobs = [];
+  for (const file of contractFiles) {
+    // For each contract, create an ingest job
+    const ingestJob = await agentset.ingestJobs.create({
+      namespaceId: namespace.id,
+      payload: {
+        type: "FILE",
+        fileUrl: `https://example.com/contracts/${file}`, // In real implementation, you'd use a hosted file URL
+        name: file
+      },
+      config: {
+        metadata: {
+          documentType: "legal_contract",
+          filename: file
+        }
+      }
+    });
+    ingestJobs.push(ingestJob);
+  }
+
+  console.log(`Created ${ingestJobs.length} ingest jobs for contracts`);
+  
+  // Wait for processing to complete (implementation depends on your actual SDK)
+  await agentset.ingestJobs.waitForCompletion(namespace.id);
+
+  // Extract important clauses using chat
+  const response = await agentset.chat({
+    namespaceId: namespace.id,
+    query: "Identify all liability clauses, termination conditions, and payment terms across all contracts. Highlight any unusual or potentially problematic provisions.",
+    messages: [
+      {
+        role: "user",
+        content: "Identify all liability clauses, termination conditions, and payment terms across all contracts. Highlight any unusual or potentially problematic provisions."
+      }
+    ],
+    topK: 20,
+    rerank: true,
+    includeMetadata: true
+  });
+
+  return {
+    analysis: response.data.text,
+    sources: response.data.sources
+  };
+}
+
+reviewContracts().catch(console.error);
+```
+
+## Common Challenges & Solutions
+
+<AccordionGroup>
+  <Accordion title="Handling large document sets">
+    When working with many documents, upload them in batches of 5-10 and increase processing wait time proportionally. Consider using a dedicated agent for each document category.
+  </Accordion>
+
+  <Accordion title="Improving response quality">
+    For complex analyses, specify a more capable model in the agent creation and structure your queries clearly. Break down complex questions into multiple targeted queries.
+  </Accordion>
+  
+  <Accordion title="Processing time considerations">
+    Large documents (>50 pages) may require extended processing time. For real-time applications, pre-process documents in advance and implement status checking before querying.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup>
+  <Card
+    title="Explore Features"
+    icon="lightbulb"
+    href="/features/agentic-rag"
+  >
+    Learn about Agentset's advanced capabilities like semantic search and citations
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/introduction"
+  >
+    View the complete API documentation
+  </Card>
+</CardGroup>
