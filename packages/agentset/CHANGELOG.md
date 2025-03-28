@@ -1,5 +1,11 @@
 # agentset
 
+## 1.1.2
+
+### Patch Changes
+
+- b9b9491: Update chat method definition & add `temprature` param
+
 ## 1.1.1
 
 ### Patch Changes
