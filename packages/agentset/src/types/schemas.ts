@@ -55,6 +55,7 @@ export interface ChatMessageSchema {
 export interface ChatParamsSchema extends SearchParamsSchema {
   systemPrompt?: string;
   stream?: boolean;
+  temperature?: number;
 }
 
 export interface ChatResponseSchema {

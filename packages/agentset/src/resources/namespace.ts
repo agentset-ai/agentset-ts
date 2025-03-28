@@ -80,7 +80,6 @@ export class NamespaceResource {
    * Chat with the namespace
    */
   async chat(
-    query: string,
     messages: ChatMessageSchema[],
     params: ChatParamsSchema = {},
     options?: FetchOptions,
@@ -91,7 +90,6 @@ export class NamespaceResource {
     }>(
       `/v1/namespace/${this.namespaceId}/chat`,
       {
-        query,
         messages,
         ...params,
       },
