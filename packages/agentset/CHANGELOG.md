@@ -1,5 +1,11 @@
 # agentset
 
+## 1.1.0
+
+### Minor Changes
+
+- 98f634f: Fix build step
+
 ## 1.0.0
 
 ### Major Changes
