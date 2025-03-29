@@ -8,6 +8,7 @@
   "access": "public",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@agentset/docs"
+    "@agentset/docs",
+    "@agentset/github"
   ]
 }
