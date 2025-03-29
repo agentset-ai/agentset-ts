@@ -1,0 +1,51 @@
+{
+  "name": "@agentset/ai-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentset-ai/agentset",
+    "directory": "packages/ai-sdk"
+  },
+  "license": "MIT",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "package.json",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "peerDependencies": {
+    "ai": "^4.1.54",
+    "zod": "^3.24.2",
+    "agentset": "^1.1.2"
+  },
+  "devDependencies": {
+    "@agentset/eslint-config": "workspace:*",
+    "@agentset/prettier-config": "workspace:*",
+    "@agentset/tsconfig": "workspace:*",
+    "@types/node": "^22.13.14",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsup": "^8.0.2",
+    "typescript": "catalog:"
+  },
+  "prettier": "@agentset/prettier-config"
+}
