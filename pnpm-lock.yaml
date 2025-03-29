@@ -36,6 +36,8 @@ importers:
         specifier: 'catalog:'
         version: 5.8.2
 
+  apps/docs: {}
+
   packages/agentset:
     devDependencies:
       '@agentset/eslint-config':
@@ -66,7 +68,7 @@ importers:
   packages/ai-sdk:
     dependencies:
       agentset:
-        specifier: ^1.1.1
+        specifier: ^1.1.2
         version: link:../agentset
       ai:
         specifier: ^4.1.54
@@ -1974,11 +1976,6 @@ packages:
 
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
-  nanoid@3.3.7:
-    resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -4930,9 +4927,6 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  nanoid@3.3.7:
-    optional: true
-
   natural-compare@1.4.0: {}
 
   node-releases@2.0.19: {}
@@ -5103,7 +5097,7 @@ snapshots:
 
   postcss@8.4.31:
     dependencies:
-      nanoid: 3.3.7
+      nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.0.2
     optional: true
