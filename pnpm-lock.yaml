@@ -80,7 +80,7 @@ importers:
         specifier: ^22.13.14
         version: 22.13.14
       agentset:
-        specifier: ^1.1.2
+        specifier: ^1.2.0
         version: link:../agentset
       ai:
         specifier: ^4.1.54
