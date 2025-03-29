@@ -6,7 +6,7 @@
     "directory": "packages/ai-sdk"
   },
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
   "peerDependencies": {
     "ai": "^4.0.0",
     "zod": "^3.0.0",
-    "agentset": "^1.1.2"
+    "agentset": "^1.2.0"
   },
   "devDependencies": {
     "@agentset/eslint-config": "workspace:*",
@@ -48,7 +48,7 @@
     "typescript": "catalog:",
     "ai": "^4.1.54",
     "zod": "^3.24.2",
-    "agentset": "^1.1.2"
+    "agentset": "^1.2.0"
   },
   "prettier": "@agentset/prettier-config"
 }
