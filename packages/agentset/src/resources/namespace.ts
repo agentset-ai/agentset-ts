@@ -1,9 +1,6 @@
 import type { ApiClient } from "../client";
 import type { FetchOptions } from "../types/common";
 import type {
-  ChatMessageSchema,
-  ChatParamsSchema,
-  ChatResponseSchema,
   SearchParamsSchema,
   SearchResultSchema,
   UpdateNamespaceOptionsSchema,
@@ -68,29 +65,6 @@ export class NamespaceResource {
       `/v1/namespace/${this.namespaceId}/search`,
       {
         query,
-        ...params,
-      },
-      options,
-    );
-
-    return response.data;
-  }
-
-  /**
-   * Chat with the namespace
-   */
-  async chat(
-    messages: ChatMessageSchema[],
-    params: ChatParamsSchema = {},
-    options?: FetchOptions,
-  ) {
-    const response = await this.client.post<{
-      success: boolean;
-      data: ChatResponseSchema;
-    }>(
-      `/v1/namespace/${this.namespaceId}/chat`,
-      {
-        messages,
         ...params,
       },
       options,

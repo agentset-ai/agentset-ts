@@ -30,6 +30,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint \"src/**/*.ts*\"",
+    "generate-types": "pnpm dlx openapi-typescript https://app.agentset.ai/openapi.json --output ./src/types/openapi.d.ts",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {

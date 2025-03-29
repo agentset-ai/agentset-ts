@@ -46,19 +46,3 @@ export interface SearchResultSchema {
   relationships?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
 }
-
-export interface ChatMessageSchema {
-  role: "user" | "assistant";
-  content: string;
-}
-
-export interface ChatParamsSchema extends SearchParamsSchema {
-  systemPrompt?: string;
-  stream?: boolean;
-  temperature?: number;
-}
-
-export interface ChatResponseSchema {
-  text: string;
-  sources: SearchResultSchema[];
-}

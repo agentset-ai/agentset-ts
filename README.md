@@ -72,11 +72,6 @@ const { documents } = await ns.documents.all();
 
 // Search the knowledge base
 const results = await ns.search("What is Agentset?");
-
-// Chat with the knowledge base
-const chat = await ns.chat("Tell me about Agentset", [
-  { role: "user", content: "What can I do with it?" },
-]);
 ```
 
 ## API Reference

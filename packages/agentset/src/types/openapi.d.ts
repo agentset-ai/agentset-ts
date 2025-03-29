@@ -168,26 +168,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/namespace/{namespaceId}/chat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Chat with a namespace
-         * @description Chat with a namespace.
-         */
-        post: operations["chat"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -446,16 +426,6 @@ export interface components {
          * @enum {string}
          */
         DocumentStatusSchema: "BACKLOG" | "QUEUED" | "QUEUED_FOR_RESYNC" | "QUEUED_FOR_DELETE" | "PRE_PROCESSING" | "PROCESSING" | "DELETING" | "CANCELLING" | "COMPLETED" | "FAILED" | "CANCELLED";
-        /** Message */
-        MessageSchema: {
-            /** @enum {string} */
-            role: "user";
-            content: string;
-        } | {
-            /** @enum {string} */
-            role: "assistant";
-            content: string;
-        };
     };
     responses: {
         /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
@@ -1368,119 +1338,6 @@ export interface operations {
                                 sequence_number?: number;
                             };
                         }[];
-                    };
-                };
-            };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
-        };
-    };
-    chat: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description The tenant id to use for the request. If not provided, the default tenant will be used. */
-                "x-tenant-id"?: string;
-            };
-            path: {
-                /** @description The id of the namespace to chat with. */
-                namespaceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": {
-                    /** @description The query to search for. */
-                    query: string;
-                    /**
-                     * @description The number of results to fetch from the vector store. Defaults to `10`.
-                     * @default 10
-                     */
-                    topK?: number;
-                    /**
-                     * @description Whether to rerank the results. Defaults to `true`.
-                     * @default true
-                     */
-                    rerank?: boolean;
-                    /** @description The number of results to return after reranking. Defaults to `topK`. */
-                    rerankLimit?: number;
-                    /** @description A filter to apply to the results. */
-                    filter?: {
-                        [key: string]: unknown;
-                    };
-                    /** @description The minimum score to return. */
-                    minScore?: number;
-                    /**
-                     * @description Whether to include relationships in the results. Defaults to `false`.
-                     * @default false
-                     */
-                    includeRelationships?: boolean;
-                    /**
-                     * @description Whether to include metadata in the results. Defaults to `true`.
-                     * @default true
-                     */
-                    includeMetadata?: boolean;
-                    /**
-                     * @description The system prompt to use for the chat. Defaults to the default system prompt.
-                     * @default
-                     *     You are Digna AI, a helpful research assistant built by Digna. Your task is to deliver an accurate and cited response to a user's query, drawing from the given search results. The search results are not visible to the user so you MUST include relevant portions of the results in your response. Your answer must be of high-quality, and written by an expert using an unbiased and journalistic tone. It is EXTREMELY IMPORTANT to directly answer the query. NEVER say "based on the search results". Your answer must be written in the same language as the query, even if the search results language is different.
-                     *
-                     *     You MUST cite the most relevant search results that answer the query. Do not mention any irrelevant results. You MUST ADHERE to the following instructions for citing search results: - to cite a search result, enclose its index located above the summary with brackets at the end of the corresponding sentence, for example "Ice is less dense than water12." or "Paris is the capital of France145." - NO SPACE between the last word and the citation, and ALWAYS use brackets. Only use this format to cite search results. NEVER include a References section at the end of your answer. - If you don't know the answer or the premise is incorrect, explain why. If the search results are empty or unhelpful, you MUST inform the user that you were unable to find references in the book and not answer the question.
-                     *
-                     *     You should give direct quotes from the search results and cite them where it improves the answer and gives better context.
-                     *
-                     */
-                    systemPrompt?: string;
-                    /** @description The messages to use for the chat. Defaults to an empty array. */
-                    messages: components["schemas"]["MessageSchema"][];
-                    /**
-                     * @description Whether to stream the response. Defaults to `false`.
-                     * @default false
-                     */
-                    stream?: boolean;
-                };
-            };
-        };
-        responses: {
-            /** @description The retrieved namespace */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: true;
-                        data: {
-                            /** @description The text of the response. */
-                            text: string;
-                            /** @description The sources of the response. */
-                            sources: {
-                                id: string;
-                                score: number;
-                                text?: string;
-                                relationships?: {
-                                    [key: string]: unknown;
-                                };
-                                metadata?: {
-                                    file_directory: string;
-                                    filename: string;
-                                    filetype: string;
-                                    link_texts?: unknown[];
-                                    link_urls?: unknown[];
-                                    languages?: unknown[];
-                                    sequence_number?: number;
-                                };
-                            }[];
-                        };
                     };
                 };
             };
