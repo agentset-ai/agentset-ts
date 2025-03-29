@@ -1,5 +1,11 @@
 # agentset
 
+## 1.2.0
+
+### Minor Changes
+
+- ec60bbc: Remove chat method & update openapi types
+
 ## 1.1.2
 
 ### Patch Changes
