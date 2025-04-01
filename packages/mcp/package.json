@@ -1,28 +1,35 @@
 {
-  "name": "@agentset/ai-sdk",
+  "name": "@agentset/mcp",
   "repository": {
     "type": "git",
     "url": "https://github.com/agentset-ai/agentset",
-    "directory": "packages/ai-sdk"
+    "directory": "packages/mcp"
   },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "agentset",
+    "knowledge-base",
+    "retrieval",
+    "ai",
+    "claude",
+    "anthropic"
+  ],
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "0.0.0",
+  "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+  "bin": {
+    "agentset-mcp-server": "dist/index.js"
   },
   "files": [
     "dist/**/*",
     "package.json",
     "CHANGELOG.md"
   ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -32,10 +39,11 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
-  "peerDependencies": {
-    "ai": "^4.0.0",
-    "zod": "^3.0.0",
-    "agentset": "workspace:*"
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "agentset": "workspace:*",
+    "commander": "^13.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@agentset/eslint-config": "workspace:*",
@@ -45,10 +53,7 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tsup": "^8.0.2",
-    "typescript": "catalog:",
-    "ai": "^4.1.54",
-    "zod": "^3.24.2",
-    "agentset": "workspace:*"
+    "typescript": "catalog:"
   },
   "prettier": "@agentset/prettier-config"
 }
