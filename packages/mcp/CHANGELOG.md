@@ -1,5 +1,13 @@
 # @agentset/mcp
 
+## 1.2.0
+
+### Minor Changes
+
+- e99b2db: - Use node-fetch as fallback
+  - Accept `--tenant` option
+  - Refactor env and option validation logic
+
 ## 1.1.0
 
 ### Minor Changes
