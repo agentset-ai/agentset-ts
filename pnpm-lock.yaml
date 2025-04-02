@@ -36,8 +36,6 @@ importers:
         specifier: 'catalog:'
         version: 5.8.2
 
-  apps/docs: {}
-
   packages/agentset:
     devDependencies:
       '@agentset/eslint-config':
