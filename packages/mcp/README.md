@@ -28,6 +28,23 @@ using pnpm:
 AGENTSET_API_KEY=your-api-key pnpm dlx @agentset/mcp --ns your-namespace-id
 ```
 
+## Adding to Claude
+
+```json
+{
+  "mcpServers": {
+    "agentset": {
+      "command": "npx",
+      "args": ["-y", "@agentset/mcp@latest"],
+      "env": {
+        "AGENTSET_API_KEY": "agentset_xxx",
+        "AGENTSET_NAMESPACE_ID": "ns_xxx"
+      }
+    }
+  }
+}
+```
+
 ## Tips
 
 Passing namespace id as an environment variable
@@ -40,6 +57,12 @@ Passing a custom tool description
 
 ```sh
 AGENTSET_API_KEY=your-api-key npx @agentset/mcp --ns your-namespace-id -d "Your custom tool description"
+```
+
+Passing a tenant id:
+
+```sh
+AGENTSET_API_KEY=your-api-key npx @agentset/mcp --ns your-namespace-id -t your-tenant-id
 ```
 
 ## API Reference

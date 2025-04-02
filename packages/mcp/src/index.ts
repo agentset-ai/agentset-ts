@@ -1,31 +1,26 @@
 #!/usr/bin/env node
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { Agentset } from "agentset";
 import { Command } from "commander";
+import fetch from "node-fetch";
 import { z } from "zod";
 
-if (!process.env.AGENTSET_API_KEY) throw new Error("AGENTSET_API_KEY not set");
-const API_KEY = process.env.AGENTSET_API_KEY;
+import { getVersion, parseOptions } from "./utils";
 
-// Get package version from package.json
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const packageJsonPath = join(__dirname, "..", "package.json");
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-const packageVersion = packageJson.version;
+if (!globalThis.fetch) {
+  globalThis.fetch = fetch as unknown as typeof global.fetch;
+}
 
 // Parse command line arguments
 const program = new Command();
 program
-  .version(packageVersion, "-v, --version", "output the current version")
+  .version(getVersion(), "-v, --version", "output the current version")
   .option(
     "-d, --description [description]",
     "override the default tool description",
   )
+  .option("-t, --tenant [tenant]", "specify the Agentset tenant id to use")
   .option(
     "--ns, --namespace [namespace]",
     "specify the Agentset namespace id to use",
@@ -33,13 +28,7 @@ program
   .parse(process.argv);
 const options = program.opts();
 
-const namespace = (options.namespace || process.env.AGENTSET_NAMESPACE_ID) as
-  | string
-  | undefined;
-if (!namespace)
-  throw new Error("Either pass --namespace or set AGENTSET_NAMESPACE_ID");
-
-console.error("Using namespace", namespace);
+const { API_KEY, NAMESPACE_ID, tenantId, description } = parseOptions(options);
 
 // Create an MCP server
 const server = new McpServer({
@@ -47,19 +36,8 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-// Default tool description
-const defaultDescription = `Look up information in the Knowledge Base. Use this tool when you need to:
- - Find relevant documents or information on specific topics
- - Retrieve company policies, procedures, or guidelines
- - Access product specifications or technical documentation
- - Get contextual information to answer company-specific questions
- - Find historical data or information about projects`;
-
-// Use the provided description if available, otherwise use the default
-if (options.description) {
-  console.error("Using overridden description");
-}
-const description = options.description || defaultDescription;
+const agentset = new Agentset({ apiKey: API_KEY });
+const ns = agentset.namespace(NAMESPACE_ID);
 
 server.tool(
   "knowledge-base-retrieve",
@@ -84,12 +62,14 @@ server.tool(
       .default(true),
   },
   async ({ query, topK, rerank }) => {
-    const agentset = new Agentset({ apiKey: API_KEY });
-    const ns = agentset.namespace(namespace);
-    const result = await ns.search(query, {
-      topK,
-      rerank,
-    });
+    const result = await ns.search(
+      query,
+      {
+        topK,
+        rerank,
+      },
+      tenantId ? { tenantId } : undefined,
+    );
 
     const content = result.map((item) => ({
       type: "text" as const,
