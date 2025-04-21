@@ -1,5 +1,13 @@
 # @agentset/ai-sdk
 
+## 1.0.1
+
+### Patch Changes
+
+- d5ea0bf: Update github repo url
+- Updated dependencies [d5ea0bf]
+  - agentset@1.2.1
+
 ## 1.0.0
 
 ### Patch Changes
