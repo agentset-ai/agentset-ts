@@ -2,7 +2,7 @@
   "name": "agentset",
   "repository": {
     "type": "git",
-    "url": "https://github.com/agentset-ai/agentset",
+    "url": "https://github.com/agentset-ai/agentset-ts",
     "directory": "packages/agentset"
   },
   "license": "MIT",
