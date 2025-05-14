@@ -12,7 +12,7 @@ export class ApiClient {
 
   constructor(apiKey: string, baseUrl: string, fetcher: CustomFetcher) {
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl;
+    this.baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     this.fetcher = fetcher;
   }
 

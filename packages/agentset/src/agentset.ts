@@ -17,7 +17,7 @@ export class Agentset {
    * @param options Options for initializing the client
    */
   constructor(options: AgentsetOptions) {
-    const baseUrl = "https://api.agentset.ai";
+    const baseUrl = options.baseUrl || "https://api.agentset.ai";
     const fetcher = options.fetcher || this.getDefaultFetcher();
 
     this.client = new ApiClient(options.apiKey, baseUrl, fetcher);

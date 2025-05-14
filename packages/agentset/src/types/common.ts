@@ -3,6 +3,12 @@
  */
 export interface AgentsetOptions {
   /**
+   * Base URL for the Agentset API. Change this if you're self-hosting.
+   * @default https://api.agentset.ai
+   */
+  baseUrl?: string;
+
+  /**
    * API key for authentication with the Agentset API
    */
   apiKey: string;
