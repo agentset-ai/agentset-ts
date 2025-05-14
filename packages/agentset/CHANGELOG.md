@@ -1,5 +1,11 @@
 # agentset
 
+## 1.2.1
+
+### Patch Changes
+
+- d5ea0bf: Update github repo url
+
 ## 1.2.0
 
 ### Minor Changes
