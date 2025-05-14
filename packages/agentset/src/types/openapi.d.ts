@@ -196,6 +196,18 @@ export interface components {
             apiKey: string;
             /** @description The API version for the Azure OpenAI API. */
             apiVersion?: string;
+        } | {
+            /** @enum {string} */
+            provider: "VOYAGE";
+            /** @enum {string} */
+            model: "voyage-3-large" | "voyage-3" | "voyage-3-lite" | "voyage-code-3" | "voyage-finance-2" | "voyage-law-2";
+            apiKey: string;
+        } | {
+            /** @enum {string} */
+            provider: "GOOGLE";
+            /** @enum {string} */
+            model: "text-embedding-004";
+            apiKey: string;
         };
         /** @description The vector store config. If not provided, our managed vector store will be used. Note: You can't change the vector store config after the namespace is created. */
         VectorStoreSchema: {
@@ -250,31 +262,22 @@ export interface components {
                 type: "TEXT";
                 /** @description The text to ingest. */
                 text: string;
-                /**
-                 * @description The name of the ingest job.
-                 * @default null
-                 */
-                name: string | null;
+                /** @description The name of the ingest job. */
+                name?: string | null;
             } | {
                 /** @enum {string} */
                 type: "FILE";
                 /** @description The URL of the file to ingest. */
                 fileUrl: string;
-                /**
-                 * @description The name of the ingest job.
-                 * @default null
-                 */
-                name: string | null;
+                /** @description The name of the ingest job. */
+                name?: string | null;
             } | {
                 /** @enum {string} */
                 type: "MANAGED_FILE";
                 /** @description The key of the managed file to ingest. */
                 key: string;
-                /**
-                 * @description The name of the ingest job.
-                 * @default null
-                 */
-                name: string | null;
+                /** @description The name of the ingest job. */
+                name?: string | null;
             } | {
                 /** @enum {string} */
                 type: "URLS";
@@ -294,6 +297,16 @@ export interface components {
                 metadata?: {
                     [key: string]: unknown;
                 };
+                /**
+                 * @description The chunking strategy to use. Defaults to `basic`.
+                 * @enum {string}
+                 */
+                chunkingStrategy?: "basic" | "by_title";
+                /**
+                 * @description The strategy to use. Defaults to `auto`.
+                 * @enum {string}
+                 */
+                strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
             } | null;
             /** @description The date and time the namespace was created. */
             createdAt: string;
@@ -973,30 +986,21 @@ export interface operations {
                         type: "TEXT";
                         /** @description The text to ingest. */
                         text: string;
-                        /**
-                         * @description The name of the ingest job.
-                         * @default null
-                         */
+                        /** @description The name of the ingest job. */
                         name?: string | null;
                     } | {
                         /** @enum {string} */
                         type: "FILE";
                         /** @description The URL of the file to ingest. */
                         fileUrl: string;
-                        /**
-                         * @description The name of the ingest job.
-                         * @default null
-                         */
+                        /** @description The name of the ingest job. */
                         name?: string | null;
                     } | {
                         /** @enum {string} */
                         type: "MANAGED_FILE";
                         /** @description The key of the managed file to ingest. */
                         key: string;
-                        /**
-                         * @description The name of the ingest job.
-                         * @default null
-                         */
+                        /** @description The name of the ingest job. */
                         name?: string | null;
                     } | {
                         /** @enum {string} */
@@ -1014,6 +1018,16 @@ export interface operations {
                         metadata?: {
                             [key: string]: unknown;
                         };
+                        /**
+                         * @description The chunking strategy to use. Defaults to `basic`.
+                         * @enum {string}
+                         */
+                        chunkingStrategy?: "basic" | "by_title";
+                        /**
+                         * @description The strategy to use. Defaults to `auto`.
+                         * @enum {string}
+                         */
+                        strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
                     };
                 };
             };
@@ -1134,6 +1148,8 @@ export interface operations {
                 orderBy?: "createdAt";
                 /** @description The order to sort by. Default is `desc`. */
                 order?: "asc" | "desc";
+                /** @description The ingest job ID to filter documents by. */
+                ingestJobId?: string;
                 /** @description The cursor to paginate by. */
                 cursor?: string;
                 /** @description The direction to paginate by. */
