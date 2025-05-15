@@ -1,5 +1,11 @@
 # @agentset/ai-sdk
 
+## 1.2.0
+
+### Minor Changes
+
+- ffb9159: Add `AgenticEngine` for agentic RAG
+
 ## 1.1.0
 
 ### Patch Changes
