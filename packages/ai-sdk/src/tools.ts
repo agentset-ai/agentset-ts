@@ -1,9 +1,11 @@
-import type { Agentset, FetchOptions, SearchParamsSchema } from "agentset";
+import type { FetchOptions, SearchParamsSchema } from "agentset";
 import { tool } from "ai";
 import { z } from "zod";
 
+import type { NamespaceInstance } from "./types";
+
 export const makeAgentsetTool = (
-  namespaceInstance: ReturnType<Agentset["namespace"]>,
+  namespaceInstance: NamespaceInstance,
   options?: SearchParamsSchema,
   extra?: FetchOptions,
 ) => {
