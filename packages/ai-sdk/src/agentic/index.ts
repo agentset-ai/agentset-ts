@@ -78,7 +78,7 @@ export interface AgenticEngineParams {
   ) => SearchResultSchema[] | Promise<SearchResultSchema[]>;
 }
 
-const AgenticEngine = (
+export const AgenticEngine = (
   namespace: NamespaceInstance,
   {
     messages,
@@ -222,5 +222,3 @@ const AgenticEngine = (
     ...(dataStreamParams ?? {}),
   });
 };
-
-export default AgenticEngine;
