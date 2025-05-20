@@ -1,5 +1,11 @@
 # @agentset/ai-sdk
 
+## 1.2.1
+
+### Patch Changes
+
+- 0261cf5: Export AgenticEngine
+
 ## 1.2.0
 
 ### Minor Changes
