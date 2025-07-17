@@ -24,11 +24,8 @@ export class IngestionsResource {
     // Build query parameters
     const queryParams = new URLSearchParams();
 
-    if (params.statuses) {
-      params.statuses.forEach((status) => {
-        queryParams.append("statuses", status);
-      });
-    }
+    if (params.statuses && params.statuses.length > 0)
+      queryParams.append("statuses", params.statuses.join(","));
 
     if (params.orderBy) queryParams.append("orderBy", params.orderBy);
     if (params.order) queryParams.append("order", params.order);
