@@ -1,6 +1,6 @@
 # @agentset/ai-sdk
 
-## 2.0.0
+## 1.2.2
 
 ### Patch Changes
 
