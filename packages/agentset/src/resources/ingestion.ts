@@ -3,8 +3,16 @@ import type { FetchOptions } from "../types/common";
 import type {
   CreateIngestJobOptionsSchema,
   IngestJobSchema,
+  IngestJobStatusSchema,
   ListIngestJobsOptionsSchema,
 } from "../types/schemas";
+
+type ListOptions = Omit<
+  NonNullable<ListIngestJobsOptionsSchema>,
+  "statuses"
+> & {
+  statuses?: IngestJobStatusSchema[];
+};
 
 /**
  * Class for working with ingest jobs for a namespace
@@ -18,9 +26,7 @@ export class IngestionsResource {
     this.namespaceId = namespaceId;
   }
 
-  private prepareParams(
-    params: NonNullable<ListIngestJobsOptionsSchema>,
-  ): string {
+  private prepareParams(params: ListOptions): string {
     // Build query parameters
     const queryParams = new URLSearchParams();
 
@@ -43,7 +49,7 @@ export class IngestionsResource {
    * List all ingest jobs for the namespace
    */
   async all(
-    params: ListIngestJobsOptionsSchema = {},
+    params: ListOptions = {},
     options?: FetchOptions,
   ): Promise<{
     jobs: IngestJobSchema[];

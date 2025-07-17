@@ -2,8 +2,13 @@ import type { ApiClient } from "../client";
 import type { FetchOptions } from "../types/common";
 import type {
   DocumentSchema,
+  DocumentStatusSchema,
   ListDocumentsOptionsSchema,
 } from "../types/schemas";
+
+type ListOptions = Omit<NonNullable<ListDocumentsOptionsSchema>, "statuses"> & {
+  statuses?: DocumentStatusSchema[];
+};
 
 /**
  * Class for working with documents for a namespace
@@ -17,9 +22,7 @@ export class DocumentsResource {
     this.namespaceId = namespaceId;
   }
 
-  private prepareParams(
-    params: NonNullable<ListDocumentsOptionsSchema>,
-  ): string {
+  private prepareParams(params: ListOptions): string {
     // Build query parameters
     const queryParams = new URLSearchParams();
 
@@ -42,7 +45,7 @@ export class DocumentsResource {
    * List all documents for the namespace
    */
   async all(
-    params: ListDocumentsOptionsSchema = {},
+    params: ListOptions = {},
     options?: FetchOptions,
   ): Promise<{
     documents: DocumentSchema[];

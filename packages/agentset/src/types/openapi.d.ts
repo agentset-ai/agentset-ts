@@ -243,6 +243,8 @@ export interface components {
         IngestJobSchema: {
             /** @description The unique ID of the ingest job. */
             id: string;
+            /** @description The name of the ingest job. */
+            name?: string | null;
             /** @description The namespace ID of the ingest job. */
             namespaceId: string;
             /**
@@ -262,35 +264,126 @@ export interface components {
                 type: "TEXT";
                 /** @description The text to ingest. */
                 text: string;
-                /** @description The name of the ingest job. */
-                name?: string | null;
+                /** @description The name of the file. */
+                fileName?: string | null;
             } | {
                 /** @enum {string} */
                 type: "FILE";
                 /** @description The URL of the file to ingest. */
                 fileUrl: string;
-                /** @description The name of the ingest job. */
-                name?: string | null;
+                /** @description The name of the file. */
+                fileName?: string | null;
             } | {
                 /** @enum {string} */
                 type: "MANAGED_FILE";
                 /** @description The key of the managed file to ingest. */
                 key: string;
-                /** @description The name of the ingest job. */
-                name?: string | null;
+                /** @description The name of the file. */
+                fileName?: string | null;
             } | {
                 /** @enum {string} */
-                type: "URLS";
-                /** @description The URLs to ingest. */
-                urls: string[];
+                type: "BATCH";
+                items: ({
+                    /** @enum {string} */
+                    type: "TEXT";
+                    /** @description The text to ingest. */
+                    text: string;
+                    /** @description The name of the file. */
+                    fileName?: string | null;
+                    /** @description The ingest job config. */
+                    config?: {
+                        /** @description Soft chunk size. */
+                        chunkSize?: number;
+                        /** @description Hard chunk size. */
+                        maxChunkSize?: number;
+                        /** @description Custom chunk overlap. */
+                        chunkOverlap?: number;
+                        /** @description Custom metadata to be added to the ingested documents. */
+                        metadata?: {
+                            [key: string]: unknown;
+                        };
+                        /**
+                         * @description The chunking strategy to use. Defaults to `basic`.
+                         * @enum {string}
+                         */
+                        chunkingStrategy?: "basic" | "by_title";
+                        /**
+                         * @description The strategy to use. Defaults to `auto`.
+                         * @enum {string}
+                         */
+                        strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+                    };
+                } | {
+                    /** @enum {string} */
+                    type: "FILE";
+                    /** @description The URL of the file to ingest. */
+                    fileUrl: string;
+                    /** @description The name of the file. */
+                    fileName?: string | null;
+                    /** @description The ingest job config. */
+                    config?: {
+                        /** @description Soft chunk size. */
+                        chunkSize?: number;
+                        /** @description Hard chunk size. */
+                        maxChunkSize?: number;
+                        /** @description Custom chunk overlap. */
+                        chunkOverlap?: number;
+                        /** @description Custom metadata to be added to the ingested documents. */
+                        metadata?: {
+                            [key: string]: unknown;
+                        };
+                        /**
+                         * @description The chunking strategy to use. Defaults to `basic`.
+                         * @enum {string}
+                         */
+                        chunkingStrategy?: "basic" | "by_title";
+                        /**
+                         * @description The strategy to use. Defaults to `auto`.
+                         * @enum {string}
+                         */
+                        strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+                    };
+                } | {
+                    /** @enum {string} */
+                    type: "MANAGED_FILE";
+                    /** @description The key of the managed file to ingest. */
+                    key: string;
+                    /** @description The name of the file. */
+                    fileName?: string | null;
+                    /** @description The ingest job config. */
+                    config?: {
+                        /** @description Soft chunk size. */
+                        chunkSize?: number;
+                        /** @description Hard chunk size. */
+                        maxChunkSize?: number;
+                        /** @description Custom chunk overlap. */
+                        chunkOverlap?: number;
+                        /** @description Custom metadata to be added to the ingested documents. */
+                        metadata?: {
+                            [key: string]: unknown;
+                        };
+                        /**
+                         * @description The chunking strategy to use. Defaults to `basic`.
+                         * @enum {string}
+                         */
+                        chunkingStrategy?: "basic" | "by_title";
+                        /**
+                         * @description The strategy to use. Defaults to `auto`.
+                         * @enum {string}
+                         */
+                        strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+                    };
+                })[];
             };
             /**
              * @description The ingest job config.
              * @default null
              */
             config: {
-                /** @description Custom chunk size. */
+                /** @description Soft chunk size. */
                 chunkSize?: number;
+                /** @description Hard chunk size. */
+                maxChunkSize?: number;
                 /** @description Custom chunk overlap. */
                 chunkOverlap?: number;
                 /** @description Custom metadata to be added to the ingested documents. */
@@ -912,8 +1005,8 @@ export interface operations {
     listIngestJobs: {
         parameters: {
             query?: {
-                /** @description Statuses to filter by. */
-                statuses?: components["schemas"]["IngestJobStatusSchema"][];
+                /** @description Comma separated list of statuses to filter by. */
+                statuses?: string;
                 /** @description The field to order by. Default is `createdAt`. */
                 orderBy?: "createdAt";
                 /** @description The sort order. Default is `desc`. */
@@ -980,38 +1073,131 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /** @description The name of the ingest job. */
+                    name?: string | null;
                     /** @description The ingest job payload. */
                     payload: {
                         /** @enum {string} */
                         type: "TEXT";
                         /** @description The text to ingest. */
                         text: string;
-                        /** @description The name of the ingest job. */
-                        name?: string | null;
+                        /** @description The name of the file. */
+                        fileName?: string | null;
                     } | {
                         /** @enum {string} */
                         type: "FILE";
                         /** @description The URL of the file to ingest. */
                         fileUrl: string;
-                        /** @description The name of the ingest job. */
-                        name?: string | null;
+                        /** @description The name of the file. */
+                        fileName?: string | null;
                     } | {
                         /** @enum {string} */
                         type: "MANAGED_FILE";
                         /** @description The key of the managed file to ingest. */
                         key: string;
-                        /** @description The name of the ingest job. */
-                        name?: string | null;
+                        /** @description The name of the file. */
+                        fileName?: string | null;
                     } | {
                         /** @enum {string} */
-                        type: "URLS";
-                        /** @description The URLs to ingest. */
-                        urls: string[];
+                        type: "BATCH";
+                        items: ({
+                            /** @enum {string} */
+                            type: "TEXT";
+                            /** @description The text to ingest. */
+                            text: string;
+                            /** @description The name of the file. */
+                            fileName?: string | null;
+                            /** @description The ingest job config. */
+                            config?: {
+                                /** @description Soft chunk size. */
+                                chunkSize?: number;
+                                /** @description Hard chunk size. */
+                                maxChunkSize?: number;
+                                /** @description Custom chunk overlap. */
+                                chunkOverlap?: number;
+                                /** @description Custom metadata to be added to the ingested documents. */
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
+                                /**
+                                 * @description The chunking strategy to use. Defaults to `basic`.
+                                 * @enum {string}
+                                 */
+                                chunkingStrategy?: "basic" | "by_title";
+                                /**
+                                 * @description The strategy to use. Defaults to `auto`.
+                                 * @enum {string}
+                                 */
+                                strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+                            };
+                        } | {
+                            /** @enum {string} */
+                            type: "FILE";
+                            /** @description The URL of the file to ingest. */
+                            fileUrl: string;
+                            /** @description The name of the file. */
+                            fileName?: string | null;
+                            /** @description The ingest job config. */
+                            config?: {
+                                /** @description Soft chunk size. */
+                                chunkSize?: number;
+                                /** @description Hard chunk size. */
+                                maxChunkSize?: number;
+                                /** @description Custom chunk overlap. */
+                                chunkOverlap?: number;
+                                /** @description Custom metadata to be added to the ingested documents. */
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
+                                /**
+                                 * @description The chunking strategy to use. Defaults to `basic`.
+                                 * @enum {string}
+                                 */
+                                chunkingStrategy?: "basic" | "by_title";
+                                /**
+                                 * @description The strategy to use. Defaults to `auto`.
+                                 * @enum {string}
+                                 */
+                                strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+                            };
+                        } | {
+                            /** @enum {string} */
+                            type: "MANAGED_FILE";
+                            /** @description The key of the managed file to ingest. */
+                            key: string;
+                            /** @description The name of the file. */
+                            fileName?: string | null;
+                            /** @description The ingest job config. */
+                            config?: {
+                                /** @description Soft chunk size. */
+                                chunkSize?: number;
+                                /** @description Hard chunk size. */
+                                maxChunkSize?: number;
+                                /** @description Custom chunk overlap. */
+                                chunkOverlap?: number;
+                                /** @description Custom metadata to be added to the ingested documents. */
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
+                                /**
+                                 * @description The chunking strategy to use. Defaults to `basic`.
+                                 * @enum {string}
+                                 */
+                                chunkingStrategy?: "basic" | "by_title";
+                                /**
+                                 * @description The strategy to use. Defaults to `auto`.
+                                 * @enum {string}
+                                 */
+                                strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+                            };
+                        })[];
                     };
                     /** @description The ingest job config. */
                     config?: {
-                        /** @description Custom chunk size. */
+                        /** @description Soft chunk size. */
                         chunkSize?: number;
+                        /** @description Hard chunk size. */
+                        maxChunkSize?: number;
                         /** @description Custom chunk overlap. */
                         chunkOverlap?: number;
                         /** @description Custom metadata to be added to the ingested documents. */
@@ -1142,8 +1328,8 @@ export interface operations {
     listDocuments: {
         parameters: {
             query?: {
-                /** @description Statuses to filter by. */
-                statuses?: components["schemas"]["DocumentStatusSchema"][];
+                /** @description Comma separated list of statuses to filter by. */
+                statuses?: string;
                 /** @description The field to order by. Default is `createdAt`. */
                 orderBy?: "createdAt";
                 /** @description The order to sort by. Default is `desc`. */
