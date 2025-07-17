@@ -1,5 +1,11 @@
 # agentset
 
+## 1.4.0
+
+### Minor Changes
+
+- d622d48: Sync types with api & fix status filters
+
 ## 1.3.0
 
 ### Minor Changes
