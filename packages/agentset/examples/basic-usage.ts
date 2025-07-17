@@ -49,10 +49,10 @@ async function main() {
     // Ingest content
     logSection("Ingesting Content");
     const ingestJob = await ns.ingestion.create({
+      name: "About Agentset",
       payload: {
         type: "TEXT",
         text: "Agentset is a RAG-as-a-service platform that provides AI-powered search and retrieval capabilities.",
-        name: "About Agentset",
       },
     });
 
