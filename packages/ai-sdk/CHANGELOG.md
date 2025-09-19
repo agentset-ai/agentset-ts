@@ -1,5 +1,11 @@
 # @agentset/ai-sdk
 
+## 2.0.0
+
+### Major Changes
+
+- 3ab098a: Upgrade ai-sdk to v5 & zod to v4
+
 ## 1.2.2
 
 ### Patch Changes
