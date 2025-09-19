@@ -2,7 +2,7 @@ import type { FetchOptions, SearchParamsSchema } from "agentset";
 import { tool } from "ai";
 import { z } from "zod/v4";
 
-import type { NamespaceInstance } from "./types";
+import type { NamespaceInstance } from "./types/ns";
 
 export const makeAgentsetTool = (
   namespaceInstance: NamespaceInstance,

@@ -2,8 +2,9 @@ import type { SearchParamsSchema, SearchResultSchema } from "agentset";
 import type { LanguageModel, ModelMessage } from "ai";
 import { createUIMessageStream, streamText } from "ai";
 
-import type { AgentsetUIMessage, NamespaceInstance } from "../types";
+import type { NamespaceInstance } from "../types/ns";
 import type { Queries } from "./utils";
+import { AgentsetUIMessage } from "../types/message";
 import { ANSWER_SYSTEM_PROMPT, NEW_MESSAGE_PROMPT } from "./prompts";
 import { evaluateQueries, formatSources, generateQueries } from "./utils";
 

@@ -1,7 +1,5 @@
-import type { Agentset, SearchResultSchema } from "agentset";
+import type { SearchResultSchema } from "agentset";
 import { UIMessage } from "ai";
-
-export type NamespaceInstance = ReturnType<Agentset["namespace"]>;
 
 export type AgentsetUIMessage = UIMessage<
   {},
