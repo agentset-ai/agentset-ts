@@ -1,36 +1,17 @@
 import type { SearchParamsSchema, SearchResultSchema } from "agentset";
-import type { CoreMessage, JSONValue, LanguageModelV1 } from "ai";
-import { createDataStreamResponse, streamText } from "ai";
+import type { LanguageModel, ModelMessage } from "ai";
+import { createUIMessageStream, streamText } from "ai";
 
-import type { NamespaceInstance } from "../types";
+import type { AgentsetUIMessage, NamespaceInstance } from "../types";
 import type { Queries } from "./utils";
 import { ANSWER_SYSTEM_PROMPT, NEW_MESSAGE_PROMPT } from "./prompts";
 import { evaluateQueries, formatSources, generateQueries } from "./utils";
-
-export type AgenticEngineAnnotation =
-  | {
-      type: "status";
-      value: "generating-queries";
-    }
-  | {
-      type: "status";
-      value: "searching";
-      queries: string[];
-    }
-  | {
-      type: "status";
-      value: "generating-answer";
-    }
-  | {
-      type: "agentset_sources";
-      value: SearchResultSchema[];
-    };
 
 export interface AgenticEngineParams {
   /**
    * The chat history.
    */
-  messages: CoreMessage[];
+  messages: ModelMessage[];
 
   /**
    * Maximum number of evaluations loops to run.
@@ -53,17 +34,17 @@ export interface AgenticEngineParams {
   /**
    * Parameters for the `generateQueries` step.
    */
-  generateQueriesStep: { model: LanguageModelV1 };
+  generateQueriesStep: { model: LanguageModel };
 
   /**
    * Parameters for the `evaluateQueries` step.
    */
-  evaluateQueriesStep: { model: LanguageModelV1 };
+  evaluateQueriesStep: { model: LanguageModel };
 
   /**
    * Parameters for the `answerStep` step.
    */
-  answerStep: Omit<Parameters<typeof streamText>[0], "messages">;
+  answerStep: Omit<Parameters<typeof streamText>[0], "messages" | "prompt">;
 
   /**
    * Callback function that is called after the evaluation loop(s) are finished with the total number of queries that were generated and searched.
@@ -77,6 +58,8 @@ export interface AgenticEngineParams {
     chunks: SearchResultSchema[],
   ) => SearchResultSchema[] | Promise<SearchResultSchema[]>;
 }
+
+const STATUS_PART_ID = "agentset-status";
 
 export const AgenticEngine = (
   namespace: NamespaceInstance,
@@ -92,18 +75,19 @@ export const AgenticEngine = (
     postProcessChunks,
   }: AgenticEngineParams,
   dataStreamParams?: Omit<
-    Parameters<typeof createDataStreamResponse>[0],
+    Parameters<typeof createUIMessageStream<AgentsetUIMessage>>[0],
     "execute"
   >,
 ) => {
   const lastMessage = messages[messages.length - 1]?.content;
   const messagesWithoutQuery = messages.slice(0, -1);
 
-  return createDataStreamResponse({
-    execute: async (dataStream) => {
-      dataStream.writeMessageAnnotation({
-        type: "status",
-        value: "generating-queries",
+  return createUIMessageStream<AgentsetUIMessage>({
+    execute: async ({ writer }) => {
+      writer.write({
+        id: STATUS_PART_ID,
+        type: "data-status",
+        data: "generating-queries",
       });
 
       // step 1. generate queries
@@ -131,10 +115,15 @@ export const AgenticEngine = (
 
         totalTokens += queriesTokens;
 
-        dataStream.writeMessageAnnotation({
-          type: "status",
-          value: "searching",
-          queries: newQueries.map((q) => q.query),
+        writer.write({
+          id: STATUS_PART_ID,
+          type: "data-status",
+          data: "searching",
+        });
+
+        writer.write({
+          type: "data-queries",
+          data: newQueries.map((q) => q.query),
         });
 
         const data = (
@@ -181,9 +170,10 @@ export const AgenticEngine = (
 
       afterQueries?.(totalQueries);
 
-      dataStream.writeMessageAnnotation({
-        type: "status",
-        value: "generating-answer",
+      writer.write({
+        id: STATUS_PART_ID,
+        type: "data-status",
+        data: "generating-answer",
       });
 
       const dedupedData = Object.values(chunks);
@@ -191,7 +181,7 @@ export const AgenticEngine = (
         ? await postProcessChunks(dedupedData)
         : dedupedData;
 
-      const newMessages: CoreMessage[] = [
+      const newMessages: ModelMessage[] = [
         ...messagesWithoutQuery,
         {
           role: "user",
@@ -205,19 +195,21 @@ export const AgenticEngine = (
         },
       ];
 
-      const { system, temperature, ...rest } = answerStep;
+      const { system, temperature, model, ...rest } = answerStep;
       const messageStream = streamText({
+        model,
         messages: newMessages,
         system: system ?? ANSWER_SYSTEM_PROMPT,
         temperature: temperature ?? 0,
         ...rest,
       });
 
-      dataStream.writeMessageAnnotation({
-        type: "agentset_sources",
-        value: finalChunks as unknown as JSONValue,
+      writer.write({
+        type: "data-sources",
+        data: finalChunks,
       });
-      messageStream.mergeIntoDataStream(dataStream);
+
+      writer.merge(messageStream.toUIMessageStream());
     },
     ...(dataStreamParams ?? {}),
   });

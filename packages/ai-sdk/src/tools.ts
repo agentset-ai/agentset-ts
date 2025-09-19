@@ -1,6 +1,6 @@
 import type { FetchOptions, SearchParamsSchema } from "agentset";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import type { NamespaceInstance } from "./types";
 
@@ -10,8 +10,9 @@ export const makeAgentsetTool = (
   extra?: FetchOptions,
 ) => {
   return tool({
-    description: `get information from your knowledge base to answer questions.`,
-    parameters: z.object({
+    description:
+      "get information from your knowledge base to answer questions.",
+    inputSchema: z.object({
       question: z.string().describe("The user's question"),
     }),
     execute: async ({ question }) => {
