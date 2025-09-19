@@ -210,7 +210,11 @@ export const AgenticEngine = (
         data: finalChunks,
       });
 
-      writer.merge(messageStream.toUIMessageStream());
+      writer.merge(
+        messageStream.toUIMessageStream({
+          sendStart: false,
+        }),
+      );
     },
     ...(dataStreamParams ?? {}),
   });
