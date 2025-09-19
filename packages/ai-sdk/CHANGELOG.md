@@ -1,5 +1,11 @@
 # @agentset/ai-sdk
 
+## 2.0.1
+
+### Patch Changes
+
+- f144996: Fix merging message (disable sendStart)
+
 ## 2.0.0
 
 ### Major Changes
