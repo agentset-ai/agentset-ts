@@ -5,14 +5,8 @@ import type {
   UpdateNamespaceOptionsSchema,
 } from "../types/schemas";
 
-/**
- * Class for working with namespaces
- */
 export class NamespacesResource {
-  private readonly client: ApiClient;
-  constructor(client: ApiClient) {
-    this.client = client;
-  }
+  constructor(private readonly client: ApiClient) {}
 
   /**
    * List all namespaces

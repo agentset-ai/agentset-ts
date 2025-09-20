@@ -10,20 +10,13 @@ type ListOptions = Omit<NonNullable<ListDocumentsOptionsSchema>, "statuses"> & {
   statuses?: DocumentStatusSchema[];
 };
 
-/**
- * Class for working with documents for a namespace
- */
 export class DocumentsResource {
-  private readonly client: ApiClient;
-  private readonly namespaceId: string;
-
-  constructor(client: ApiClient, namespaceId: string) {
-    this.client = client;
-    this.namespaceId = namespaceId;
-  }
+  constructor(
+    private readonly client: ApiClient,
+    private readonly namespaceId: string,
+  ) {}
 
   private prepareParams(params: ListOptions): string {
-    // Build query parameters
     const queryParams = new URLSearchParams();
 
     if (params.statuses && params.statuses.length > 0)

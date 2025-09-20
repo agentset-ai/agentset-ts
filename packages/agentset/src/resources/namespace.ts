@@ -6,33 +6,20 @@ import type {
   UpdateNamespaceOptionsSchema,
 } from "../types/schemas";
 import type { NamespacesResource } from "./namespaces";
-import { DocumentsResource } from "./document";
-import { IngestionsResource } from "./ingestion";
+import { DocumentsResource } from "./documents";
+import { IngestionResource } from "./ingestion";
 
-/**
- * Class for working with a specific namespace
- */
 export class NamespaceResource {
-  private readonly namespaceId: string;
-  private readonly client: ApiClient;
-
-  /** Access ingestion operations for this namespace */
-  readonly ingestion: IngestionsResource;
-
-  /** Access document operations for this namespace */
-  readonly documents: DocumentsResource;
-  readonly namespaces: NamespacesResource;
+  public readonly ingestion: IngestionResource;
+  public readonly documents: DocumentsResource;
 
   constructor(
-    client: ApiClient,
-    namespaces: NamespacesResource,
-    namespaceId: string,
+    private readonly client: ApiClient,
+    public readonly namespaces: NamespacesResource,
+    private readonly namespaceId: string,
   ) {
-    this.client = client;
-    this.namespaceId = namespaceId;
-    this.ingestion = new IngestionsResource(client, namespaceId);
+    this.ingestion = new IngestionResource(client, namespaceId);
     this.documents = new DocumentsResource(client, namespaceId);
-    this.namespaces = namespaces;
   }
 
   /**

@@ -14,17 +14,11 @@ type ListOptions = Omit<
   statuses?: IngestJobStatusSchema[];
 };
 
-/**
- * Class for working with ingest jobs for a namespace
- */
-export class IngestionsResource {
-  private readonly client: ApiClient;
-  private readonly namespaceId: string;
-
-  constructor(client: ApiClient, namespaceId: string) {
-    this.client = client;
-    this.namespaceId = namespaceId;
-  }
+export class IngestionResource {
+  constructor(
+    private readonly client: ApiClient,
+    private readonly namespaceId: string,
+  ) {}
 
   private prepareParams(params: ListOptions): string {
     // Build query parameters
