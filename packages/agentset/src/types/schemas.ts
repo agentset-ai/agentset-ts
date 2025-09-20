@@ -46,3 +46,20 @@ export interface SearchResultSchema {
   relationships?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
 }
+
+// Upload types
+export type CreateUploadOptionsSchema = NonNullable<
+  operations["createUpload"]["requestBody"]
+>["content"]["application/json"];
+
+export type CreateBatchUploadOptionsSchema = NonNullable<
+  operations["createBatchUpload"]["requestBody"]
+>["content"]["application/json"];
+
+export type UploadResponseSchema = NonNullable<
+  operations["createUpload"]["responses"]["201"]["content"]["application/json"]
+>["data"];
+
+export type BatchUploadResponseSchema = NonNullable<
+  operations["createBatchUpload"]["responses"]["201"]["content"]["application/json"]
+>["data"];

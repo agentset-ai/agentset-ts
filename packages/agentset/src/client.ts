@@ -6,14 +6,16 @@ import { createError } from "./errors";
  * @internal
  */
 export class ApiClient {
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
-  private readonly fetcher: CustomFetcher;
-
-  constructor(apiKey: string, baseUrl: string, fetcher: CustomFetcher) {
-    this.apiKey = apiKey;
+  constructor(
+    private readonly apiKey: string,
+    private readonly baseUrl: string,
+    private readonly fetcher: CustomFetcher,
+  ) {
     this.baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    this.fetcher = fetcher;
+  }
+
+  public getFetcher(): CustomFetcher {
+    return this.fetcher;
   }
 
   /**

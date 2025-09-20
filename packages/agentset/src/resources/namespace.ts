@@ -8,10 +8,12 @@ import type {
 import type { NamespacesResource } from "./namespaces";
 import { DocumentsResource } from "./documents";
 import { IngestionResource } from "./ingestion";
+import { UploadsResource } from "./uploads";
 
 export class NamespaceResource {
   public readonly ingestion: IngestionResource;
   public readonly documents: DocumentsResource;
+  public readonly uploads: UploadsResource;
 
   constructor(
     private readonly client: ApiClient,
@@ -20,6 +22,7 @@ export class NamespaceResource {
   ) {
     this.ingestion = new IngestionResource(client, namespaceId);
     this.documents = new DocumentsResource(client, namespaceId);
+    this.uploads = new UploadsResource(client, namespaceId);
   }
 
   /**

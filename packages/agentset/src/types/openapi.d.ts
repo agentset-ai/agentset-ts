@@ -168,42 +168,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/namespace/{namespaceId}/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create presigned URL for file upload
+         * @description Generate a presigned URL for uploading a single file to the specified namespace.
+         */
+        post: operations["createUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/namespace/{namespaceId}/uploads/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create presigned URLs for batch file upload
+         * @description Generate presigned URLs for uploading multiple files to the specified namespace.
+         */
+        post: operations["createBatchUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @description The embedding model config. If not provided, our managed embedding model will be used. Note: You can't change the embedding model config after the namespace is created. */
         EmbeddingConfigSchema: {
-            /** @enum {string} */
+            /** @constant */
             provider: "OPENAI";
             /** @enum {string} */
             model: "text-embedding-3-small" | "text-embedding-3-large";
             apiKey: string;
         } | {
-            /** @enum {string} */
+            /** @constant */
             provider: "AZURE_OPENAI";
             /** @enum {string} */
             model: "text-embedding-3-small" | "text-embedding-3-large";
             /**
              * Format: uri
-             * @description The base URL of the Azure OpenAI API.
-             * @example https://example.openai.azure.com/openai/deployments
+             * @description The resource name of the Azure OpenAI API. https://{resourceName}.openai.azure.com/v1
+             * @example my-resource-name
              */
-            baseUrl: string;
+            resourceName: string;
             /** @description The deployment name of the Azure OpenAI API. */
             deployment: string;
             /** @description The API key for the Azure OpenAI API. */
             apiKey: string;
-            /** @description The API version for the Azure OpenAI API. */
-            apiVersion?: string;
+            /**
+             * @description The API version for the Azure OpenAI API. Defaults to `preview`.
+             * @default preview
+             */
+            apiVersion: string;
         } | {
-            /** @enum {string} */
+            /** @constant */
             provider: "VOYAGE";
             /** @enum {string} */
             model: "voyage-3-large" | "voyage-3" | "voyage-3-lite" | "voyage-code-3" | "voyage-finance-2" | "voyage-law-2";
             apiKey: string;
         } | {
-            /** @enum {string} */
+            /** @constant */
             provider: "GOOGLE";
             /** @enum {string} */
             model: "text-embedding-004";
@@ -211,7 +254,7 @@ export interface components {
         };
         /** @description The vector store config. If not provided, our managed vector store will be used. Note: You can't change the vector store config after the namespace is created. */
         VectorStoreSchema: {
-            /** @enum {string} */
+            /** @constant */
             provider: "PINECONE";
             /** @description The API key for the Pinecone index. */
             apiKey: string;
@@ -222,6 +265,16 @@ export interface components {
              */
             indexHost: string;
         };
+        /**
+         * @description The status of the ingest job.
+         * @enum {string}
+         */
+        IngestJobStatusSchema: "BACKLOG" | "QUEUED" | "QUEUED_FOR_RESYNC" | "QUEUED_FOR_DELETE" | "PRE_PROCESSING" | "PROCESSING" | "DELETING" | "CANCELLING" | "COMPLETED" | "FAILED" | "CANCELLED";
+        /**
+         * @description The status of the document.
+         * @enum {string}
+         */
+        DocumentStatusSchema: "BACKLOG" | "QUEUED" | "QUEUED_FOR_RESYNC" | "QUEUED_FOR_DELETE" | "PRE_PROCESSING" | "PROCESSING" | "DELETING" | "CANCELLING" | "COMPLETED" | "FAILED" | "CANCELLED";
         /** Namespace */
         NamespaceSchema: {
             /** @description The unique ID of the namespace. */
@@ -235,9 +288,9 @@ export interface components {
             /** @description The date and time the namespace was created. */
             createdAt: string;
             /** @default null */
-            embeddingConfig: components["schemas"]["EmbeddingConfigSchema"] | null;
+            embeddingConfig: components["schemas"]["EmbeddingConfigSchemaOutput"] | null;
             /** @default null */
-            vectorStoreConfig: components["schemas"]["VectorStoreSchema"] | null;
+            vectorStoreConfig: components["schemas"]["VectorStoreSchemaOutput"] | null;
         };
         /** Ingest Job */
         IngestJobSchema: {
@@ -260,31 +313,32 @@ export interface components {
             error: string | null;
             /** @description The ingest job payload. */
             payload: {
-                /** @enum {string} */
+                /** @constant */
                 type: "TEXT";
                 /** @description The text to ingest. */
                 text: string;
                 /** @description The name of the file. */
                 fileName?: string | null;
             } | {
-                /** @enum {string} */
+                /** @constant */
                 type: "FILE";
                 /** @description The URL of the file to ingest. */
                 fileUrl: string;
                 /** @description The name of the file. */
                 fileName?: string | null;
             } | {
-                /** @enum {string} */
+                /** @constant */
                 type: "MANAGED_FILE";
                 /** @description The key of the managed file to ingest. */
                 key: string;
                 /** @description The name of the file. */
                 fileName?: string | null;
             } | {
-                /** @enum {string} */
+                /** @constant */
                 type: "BATCH";
+                /** @description The items to ingest. */
                 items: ({
-                    /** @enum {string} */
+                    /** @constant */
                     type: "TEXT";
                     /** @description The text to ingest. */
                     text: string;
@@ -298,9 +352,9 @@ export interface components {
                         maxChunkSize?: number;
                         /** @description Custom chunk overlap. */
                         chunkOverlap?: number;
-                        /** @description Custom metadata to be added to the ingested documents. */
+                        /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                         metadata?: {
-                            [key: string]: unknown;
+                            [key: string]: string | number | boolean;
                         };
                         /**
                          * @description The chunking strategy to use. Defaults to `basic`.
@@ -314,7 +368,7 @@ export interface components {
                         strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
                     };
                 } | {
-                    /** @enum {string} */
+                    /** @constant */
                     type: "FILE";
                     /** @description The URL of the file to ingest. */
                     fileUrl: string;
@@ -328,9 +382,9 @@ export interface components {
                         maxChunkSize?: number;
                         /** @description Custom chunk overlap. */
                         chunkOverlap?: number;
-                        /** @description Custom metadata to be added to the ingested documents. */
+                        /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                         metadata?: {
-                            [key: string]: unknown;
+                            [key: string]: string | number | boolean;
                         };
                         /**
                          * @description The chunking strategy to use. Defaults to `basic`.
@@ -344,7 +398,7 @@ export interface components {
                         strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
                     };
                 } | {
-                    /** @enum {string} */
+                    /** @constant */
                     type: "MANAGED_FILE";
                     /** @description The key of the managed file to ingest. */
                     key: string;
@@ -358,9 +412,9 @@ export interface components {
                         maxChunkSize?: number;
                         /** @description Custom chunk overlap. */
                         chunkOverlap?: number;
-                        /** @description Custom metadata to be added to the ingested documents. */
+                        /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                         metadata?: {
-                            [key: string]: unknown;
+                            [key: string]: string | number | boolean;
                         };
                         /**
                          * @description The chunking strategy to use. Defaults to `basic`.
@@ -375,10 +429,7 @@ export interface components {
                     };
                 })[];
             };
-            /**
-             * @description The ingest job config.
-             * @default null
-             */
+            /** @default null */
             config: {
                 /** @description Soft chunk size. */
                 chunkSize?: number;
@@ -386,9 +437,9 @@ export interface components {
                 maxChunkSize?: number;
                 /** @description Custom chunk overlap. */
                 chunkOverlap?: number;
-                /** @description Custom metadata to be added to the ingested documents. */
+                /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                 metadata?: {
-                    [key: string]: unknown;
+                    [key: string]: string | number | boolean;
                 };
                 /**
                  * @description The chunking strategy to use. Defaults to `basic`.
@@ -429,11 +480,6 @@ export interface components {
              */
             failedAt: string | null;
         };
-        /**
-         * @description The status of the ingest job.
-         * @enum {string}
-         */
-        IngestJobStatusSchema: "BACKLOG" | "QUEUED" | "QUEUED_FOR_RESYNC" | "QUEUED_FOR_DELETE" | "PRE_PROCESSING" | "PROCESSING" | "DELETING" | "CANCELLING" | "COMPLETED" | "FAILED" | "CANCELLED";
         /** Document */
         DocumentSchema: {
             /** @description The unique ID of the document. */
@@ -463,25 +509,22 @@ export interface components {
             error: string | null;
             /** @description The source of the document. */
             source: {
-                /** @enum {string} */
+                /** @constant */
                 type: "TEXT";
                 /** @description The text to ingest. */
                 text: string;
             } | {
-                /** @enum {string} */
+                /** @constant */
                 type: "FILE";
                 /** @description The URL of the file to ingest. */
                 fileUrl: string;
             } | {
-                /** @enum {string} */
+                /** @constant */
                 type: "MANAGED_FILE";
                 /** @description The key of the managed file to ingest. */
                 key: string;
             };
-            /**
-             * @description The properties of the document.
-             * @default null
-             */
+            /** @default null */
             properties: {
                 /** @description The size of the file in bytes. */
                 fileSize: number;
@@ -527,11 +570,59 @@ export interface components {
              */
             failedAt: string | null;
         };
-        /**
-         * @description The status of the document.
-         * @enum {string}
-         */
-        DocumentStatusSchema: "BACKLOG" | "QUEUED" | "QUEUED_FOR_RESYNC" | "QUEUED_FOR_DELETE" | "PRE_PROCESSING" | "PROCESSING" | "DELETING" | "CANCELLING" | "COMPLETED" | "FAILED" | "CANCELLED";
+        /** @description The embedding model config. If not provided, our managed embedding model will be used. Note: You can't change the embedding model config after the namespace is created. */
+        EmbeddingConfigSchemaOutput: {
+            /** @constant */
+            provider: "OPENAI";
+            /** @enum {string} */
+            model: "text-embedding-3-small" | "text-embedding-3-large";
+            apiKey: string;
+        } | {
+            /** @constant */
+            provider: "AZURE_OPENAI";
+            /** @enum {string} */
+            model: "text-embedding-3-small" | "text-embedding-3-large";
+            /**
+             * Format: uri
+             * @description The resource name of the Azure OpenAI API. https://{resourceName}.openai.azure.com/v1
+             * @example my-resource-name
+             */
+            resourceName: string;
+            /** @description The deployment name of the Azure OpenAI API. */
+            deployment: string;
+            /** @description The API key for the Azure OpenAI API. */
+            apiKey: string;
+            /**
+             * @description The API version for the Azure OpenAI API. Defaults to `preview`.
+             * @default preview
+             */
+            apiVersion: string;
+        } | {
+            /** @constant */
+            provider: "VOYAGE";
+            /** @enum {string} */
+            model: "voyage-3-large" | "voyage-3" | "voyage-3-lite" | "voyage-code-3" | "voyage-finance-2" | "voyage-law-2";
+            apiKey: string;
+        } | {
+            /** @constant */
+            provider: "GOOGLE";
+            /** @enum {string} */
+            model: "text-embedding-004";
+            apiKey: string;
+        };
+        /** @description The vector store config. If not provided, our managed vector store will be used. Note: You can't change the vector store config after the namespace is created. */
+        VectorStoreSchemaOutput: {
+            /** @constant */
+            provider: "PINECONE";
+            /** @description The API key for the Pinecone index. */
+            apiKey: string;
+            /**
+             * Format: uri
+             * @description The host of the Pinecone index.
+             * @example https://example.svc.aped-1234-a56b.pinecone.io
+             */
+            indexHost: string;
+        };
     };
     responses: {
         /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
@@ -804,6 +895,276 @@ export interface components {
                 };
             };
         };
+        /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+        bad_request: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example bad_request
+                         * @enum {string}
+                         */
+                        code: "bad_request";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#bad-request
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+        unauthorized: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example unauthorized
+                         * @enum {string}
+                         */
+                        code: "unauthorized";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+        forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example forbidden
+                         * @enum {string}
+                         */
+                        code: "forbidden";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#forbidden
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description The server cannot find the requested resource. */
+        not_found: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example not_found
+                         * @enum {string}
+                         */
+                        code: "not_found";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#not-found
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description This response is sent when a request conflicts with the current state of the server. */
+        conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example conflict
+                         * @enum {string}
+                         */
+                        code: "conflict";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#conflict
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+        invite_expired: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example invite_expired
+                         * @enum {string}
+                         */
+                        code: "invite_expired";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+        unprocessable_entity: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example unprocessable_entity
+                         * @enum {string}
+                         */
+                        code: "unprocessable_entity";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+        rate_limit_exceeded: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example rate_limit_exceeded
+                         * @enum {string}
+                         */
+                        code: "rate_limit_exceeded";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
+        /** @description The server has encountered a situation it does not know how to handle. */
+        internal_server_error: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @example false */
+                    success: boolean;
+                    error: {
+                        /**
+                         * @description A short code indicating the error code returned.
+                         * @example internal_server_error
+                         * @enum {string}
+                         */
+                        code: "internal_server_error";
+                        /**
+                         * @description A human readable explanation of what went wrong.
+                         * @example The requested resource was not found.
+                         */
+                        message: string;
+                        /**
+                         * @description A link to our documentation with more details about this error code
+                         * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                         */
+                        doc_url?: string;
+                    };
+                };
+            };
+        };
     };
     parameters: never;
     requestBodies: never;
@@ -828,21 +1189,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["NamespaceSchema"][];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     createNamespace: {
@@ -870,21 +1492,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["NamespaceSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     getNamespace: {
@@ -892,7 +1775,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The id of the namespace to retrieve. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -906,21 +1789,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["NamespaceSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     deleteNamespace: {
@@ -928,7 +2072,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The id of the namespace to delete. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -942,21 +2086,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["NamespaceSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     updateNamespace: {
@@ -964,7 +2369,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The id of the namespace to update. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -985,21 +2390,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["NamespaceSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     listIngestJobs: {
@@ -1023,7 +2689,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to create the ingest job for. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -1037,7 +2703,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["IngestJobSchema"][];
                         pagination: {
@@ -1046,15 +2712,276 @@ export interface operations {
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     createIngestJob: {
@@ -1065,7 +2992,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to create the ingest job for. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -1077,31 +3004,32 @@ export interface operations {
                     name?: string | null;
                     /** @description The ingest job payload. */
                     payload: {
-                        /** @enum {string} */
+                        /** @constant */
                         type: "TEXT";
                         /** @description The text to ingest. */
                         text: string;
                         /** @description The name of the file. */
                         fileName?: string | null;
                     } | {
-                        /** @enum {string} */
+                        /** @constant */
                         type: "FILE";
                         /** @description The URL of the file to ingest. */
                         fileUrl: string;
                         /** @description The name of the file. */
                         fileName?: string | null;
                     } | {
-                        /** @enum {string} */
+                        /** @constant */
                         type: "MANAGED_FILE";
                         /** @description The key of the managed file to ingest. */
                         key: string;
                         /** @description The name of the file. */
                         fileName?: string | null;
                     } | {
-                        /** @enum {string} */
+                        /** @constant */
                         type: "BATCH";
+                        /** @description The items to ingest. */
                         items: ({
-                            /** @enum {string} */
+                            /** @constant */
                             type: "TEXT";
                             /** @description The text to ingest. */
                             text: string;
@@ -1115,9 +3043,9 @@ export interface operations {
                                 maxChunkSize?: number;
                                 /** @description Custom chunk overlap. */
                                 chunkOverlap?: number;
-                                /** @description Custom metadata to be added to the ingested documents. */
+                                /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                                 metadata?: {
-                                    [key: string]: unknown;
+                                    [key: string]: string | number | boolean;
                                 };
                                 /**
                                  * @description The chunking strategy to use. Defaults to `basic`.
@@ -1131,7 +3059,7 @@ export interface operations {
                                 strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
                             };
                         } | {
-                            /** @enum {string} */
+                            /** @constant */
                             type: "FILE";
                             /** @description The URL of the file to ingest. */
                             fileUrl: string;
@@ -1145,9 +3073,9 @@ export interface operations {
                                 maxChunkSize?: number;
                                 /** @description Custom chunk overlap. */
                                 chunkOverlap?: number;
-                                /** @description Custom metadata to be added to the ingested documents. */
+                                /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                                 metadata?: {
-                                    [key: string]: unknown;
+                                    [key: string]: string | number | boolean;
                                 };
                                 /**
                                  * @description The chunking strategy to use. Defaults to `basic`.
@@ -1161,7 +3089,7 @@ export interface operations {
                                 strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
                             };
                         } | {
-                            /** @enum {string} */
+                            /** @constant */
                             type: "MANAGED_FILE";
                             /** @description The key of the managed file to ingest. */
                             key: string;
@@ -1175,9 +3103,9 @@ export interface operations {
                                 maxChunkSize?: number;
                                 /** @description Custom chunk overlap. */
                                 chunkOverlap?: number;
-                                /** @description Custom metadata to be added to the ingested documents. */
+                                /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                                 metadata?: {
-                                    [key: string]: unknown;
+                                    [key: string]: string | number | boolean;
                                 };
                                 /**
                                  * @description The chunking strategy to use. Defaults to `basic`.
@@ -1200,9 +3128,9 @@ export interface operations {
                         maxChunkSize?: number;
                         /** @description Custom chunk overlap. */
                         chunkOverlap?: number;
-                        /** @description Custom metadata to be added to the ingested documents. */
+                        /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
                         metadata?: {
-                            [key: string]: unknown;
+                            [key: string]: string | number | boolean;
                         };
                         /**
                          * @description The chunking strategy to use. Defaults to `basic`.
@@ -1226,21 +3154,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["IngestJobSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     getIngestJobInfo: {
@@ -1251,7 +3440,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to retrieve. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
                 /** @description The id of the ingest job to retrieve. */
                 jobId: string;
@@ -1267,21 +3456,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["IngestJobSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     deleteIngestJob: {
@@ -1292,7 +3742,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to delete. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
                 /** @description The id of the ingest job to delete. */
                 jobId: string;
@@ -1308,21 +3758,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["IngestJobSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     listDocuments: {
@@ -1348,7 +4059,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to create the ingest job for. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -1362,7 +4073,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["DocumentSchema"][];
                         pagination: {
@@ -1371,15 +4082,276 @@ export interface operations {
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     getDocument: {
@@ -1390,7 +4362,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to retrieve. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
                 /** @description The id of the document to retrieve. */
                 documentId: string;
@@ -1406,21 +4378,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["DocumentSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     deleteDocument: {
@@ -1431,7 +4664,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to delete. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
                 /** @description The id of the document to delete. */
                 documentId: string;
@@ -1447,21 +4680,282 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: components["schemas"]["DocumentSchema"];
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
     search: {
@@ -1472,7 +4966,7 @@ export interface operations {
                 "x-tenant-id"?: string;
             };
             path: {
-                /** @description The id of the namespace to search. */
+                /** @description The id of the namespace (prefixed with ns_) */
                 namespaceId: string;
             };
             cookie?: never;
@@ -1510,6 +5004,12 @@ export interface operations {
                      * @default true
                      */
                     includeMetadata?: boolean;
+                    keywordFilter?: string;
+                    /**
+                     * @default semantic
+                     * @enum {string}
+                     */
+                    mode?: "semantic" | "keyword";
                 };
             };
         };
@@ -1521,7 +5021,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         data: {
                             id: string;
@@ -1543,15 +5043,928 @@ export interface operations {
                     };
                 };
             };
-            400: components["responses"]["400"];
-            401: components["responses"]["401"];
-            403: components["responses"]["403"];
-            404: components["responses"]["404"];
-            409: components["responses"]["409"];
-            410: components["responses"]["410"];
-            422: components["responses"]["422"];
-            429: components["responses"]["429"];
-            500: components["responses"]["500"];
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    createUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description File name
+                     * @example document.pdf
+                     */
+                    fileName: string;
+                    /**
+                     * @description Content type
+                     * @example application/pdf
+                     */
+                    contentType: string;
+                    /**
+                     * @description File size in bytes
+                     * @example 1024
+                     */
+                    fileSize: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Presigned URL generated successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            /**
+                             * Format: uri
+                             * @description Presigned URL for file upload. Make a `PUT` request to this URL with the file content and the `Content-Type` header.
+                             */
+                            url: string;
+                            /** @description Key of the file in the storage. You'll send this in the `MANAGED_FILE` payload when creating an ingest job. */
+                            key: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    createBatchUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    files: {
+                        /**
+                         * @description File name
+                         * @example document.pdf
+                         */
+                        fileName: string;
+                        /**
+                         * @description Content type
+                         * @example application/pdf
+                         */
+                        contentType: string;
+                        /**
+                         * @description File size in bytes
+                         * @example 1024
+                         */
+                        fileSize: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description Presigned URLs generated successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            /**
+                             * Format: uri
+                             * @description Presigned URL for file upload. Make a `PUT` request to this URL with the file content and the `Content-Type` header.
+                             */
+                            url: string;
+                            /** @description Key of the file in the storage. You'll send this in the `MANAGED_FILE` payload when creating an ingest job. */
+                            key: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example bad_request
+                             * @enum {string}
+                             */
+                            code: "bad_request";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#bad-request
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the client must authenticate itself to get the requested response. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unauthorized
+                             * @enum {string}
+                             */
+                            code: "unauthorized";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unauthorized
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example forbidden
+                             * @enum {string}
+                             */
+                            code: "forbidden";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#forbidden
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example not_found
+                             * @enum {string}
+                             */
+                            code: "not_found";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#not-found
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when a request conflicts with the current state of the server. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example conflict
+                             * @enum {string}
+                             */
+                            code: "conflict";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#conflict
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description This response is sent when the requested content has been permanently deleted from server, with no forwarding address. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example invite_expired
+                             * @enum {string}
+                             */
+                            code: "invite_expired";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#invite-expired
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The request was well-formed but was unable to be followed due to semantic errors. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example unprocessable_entity
+                             * @enum {string}
+                             */
+                            code: "unprocessable_entity";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#unprocessable-entity
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The user has sent too many requests in a given amount of time ("rate limiting") */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example rate_limit_exceeded
+                             * @enum {string}
+                             */
+                            code: "rate_limit_exceeded";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#rate-limit_exceeded
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
+            /** @description The server has encountered a situation it does not know how to handle. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /**
+                             * @description A short code indicating the error code returned.
+                             * @example internal_server_error
+                             * @enum {string}
+                             */
+                            code: "internal_server_error";
+                            /**
+                             * @description A human readable explanation of what went wrong.
+                             * @example The requested resource was not found.
+                             */
+                            message: string;
+                            /**
+                             * @description A link to our documentation with more details about this error code
+                             * @example https://docs.agentset.com/api-reference/errors#internal-server_error
+                             */
+                            doc_url?: string;
+                        };
+                    };
+                };
+            };
         };
     };
 }
