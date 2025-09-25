@@ -1,5 +1,18 @@
 # @agentset/ai-sdk
 
+## 3.0.0
+
+### Minor Changes
+
+- 9b46fbf: - Add uploads endpoints
+  - Add re-ingest endpoint
+  - Fix `AgenticEngine` last message
+
+### Patch Changes
+
+- Updated dependencies [9b46fbf]
+  - agentset@1.5.0
+
 ## 2.0.1
 
 ### Patch Changes

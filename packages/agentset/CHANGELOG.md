@@ -1,5 +1,13 @@
 # agentset
 
+## 1.5.0
+
+### Minor Changes
+
+- 9b46fbf: - Add uploads endpoints
+  - Add re-ingest endpoint
+  - Fix `AgenticEngine` last message
+
 ## 1.4.0
 
 ### Minor Changes
