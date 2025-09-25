@@ -6,7 +6,12 @@ import type { NamespaceInstance } from "../types/ns";
 import type { Queries } from "./utils";
 import { AgentsetUIMessage } from "../types/message";
 import { ANSWER_SYSTEM_PROMPT, NEW_MESSAGE_PROMPT } from "./prompts";
-import { evaluateQueries, formatSources, generateQueries } from "./utils";
+import {
+  evaluateQueries,
+  formatSources,
+  generateQueries,
+  getMessageContent,
+} from "./utils";
 
 export interface AgenticEngineParams {
   /**
@@ -80,7 +85,10 @@ export const AgenticEngine = (
     "execute"
   >,
 ) => {
-  const lastMessage = messages[messages.length - 1]?.content;
+  const lastMessage =
+    messages.length > 0
+      ? getMessageContent(messages[messages.length - 1]!)
+      : null;
   const messagesWithoutQuery = messages.slice(0, -1);
 
   return createUIMessageStream<AgentsetUIMessage>({
@@ -190,7 +198,7 @@ export const AgenticEngine = (
             chunks: formatSources(finalChunks),
             // put the original query in the message to help with context
             query: lastMessage
-              ? `<query>${lastMessage as string}</query>`
+              ? `<query>${lastMessage}</query>`
               : "No query provided",
           }),
         },
