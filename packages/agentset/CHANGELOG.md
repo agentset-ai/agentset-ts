@@ -4,9 +4,7 @@
 
 ### Minor Changes
 
-- 9b46fbf: - Add uploads endpoints
-  - Add re-ingest endpoint
-  - Fix `AgenticEngine` last message
+- 9b46fbf: Add uploads & re-ingest endpoints
 
 ## 1.4.0
 
