@@ -98,4 +98,22 @@ export class IngestionResource {
       options,
     );
   }
+
+  /**
+   * Re-ingest a job
+   */
+  async reIngest(
+    jobId: string,
+    options?: FetchOptions,
+  ): Promise<Pick<IngestJobSchema, "id">> {
+    const response = await this.client.post<{
+      success: boolean;
+      data: Pick<IngestJobSchema, "id">;
+    }>(
+      `/v1/namespace/${this.namespaceId}/ingest-jobs/${jobId}/re-ingest`,
+      options,
+    );
+
+    return response.data;
+  }
 }
