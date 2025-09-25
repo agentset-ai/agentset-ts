@@ -1,5 +1,16 @@
 # @agentset/ai-sdk
 
+## 2.1.0
+
+### Minor Changes
+
+- 9b46fbf: Fix `AgenticEngine` last message
+
+### Patch Changes
+
+- Updated dependencies [9b46fbf]
+  - agentset@1.5.0
+
 ## 2.0.1
 
 ### Patch Changes
