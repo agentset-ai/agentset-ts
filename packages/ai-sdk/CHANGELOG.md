@@ -1,5 +1,13 @@
 # @agentset/ai-sdk
 
+## 3.0.0
+
+### Patch Changes
+
+- 8e95a68: Update API types
+- Updated dependencies [8e95a68]
+  - agentset@1.6.0
+
 ## 2.1.0
 
 ### Minor Changes
