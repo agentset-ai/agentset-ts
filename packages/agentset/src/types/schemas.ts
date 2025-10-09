@@ -2,10 +2,10 @@ import type { components, operations } from "./openapi";
 
 export type Schemas = components["schemas"];
 
-export type EmbeddingConfigSchema = Schemas["EmbeddingConfigSchema"];
-export type VectorStoreSchema = Schemas["VectorStoreSchema"];
+export type EmbeddingConfigSchema = Schemas["embedding-model-config"];
+export type VectorStoreSchema = Schemas["vector-store-config"];
 
-export type NamespaceSchema = Schemas["NamespaceSchema"];
+export type NamespaceSchema = Schemas["namespace"];
 export type CreateNamespaceOptionsSchema = NonNullable<
   operations["createNamespace"]["requestBody"]
 >["content"]["application/json"];
@@ -13,17 +13,17 @@ export type UpdateNamespaceOptionsSchema = NonNullable<
   operations["updateNamespace"]["requestBody"]
 >["content"]["application/json"];
 
-export type IngestJobSchema = Schemas["IngestJobSchema"];
+export type IngestJobSchema = Schemas["ingest-job"];
 export type ListIngestJobsOptionsSchema = NonNullable<
   operations["listIngestJobs"]["parameters"]
 >["query"];
 export type CreateIngestJobOptionsSchema = NonNullable<
   operations["createIngestJob"]["requestBody"]
 >["content"]["application/json"];
-export type IngestJobStatusSchema = Schemas["IngestJobStatusSchema"];
+export type IngestJobStatusSchema = Schemas["document-status"];
 
-export type DocumentSchema = Schemas["DocumentSchema"];
-export type DocumentStatusSchema = Schemas["DocumentStatusSchema"];
+export type DocumentSchema = Schemas["document"];
+export type DocumentStatusSchema = Schemas["document-status"];
 export type ListDocumentsOptionsSchema = NonNullable<
   operations["listDocuments"]["parameters"]
 >["query"];
