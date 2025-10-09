@@ -1,5 +1,11 @@
 # agentset
 
+## 1.6.0
+
+### Minor Changes
+
+- 8e95a68: Update API types
+
 ## 1.5.0
 
 ### Minor Changes
