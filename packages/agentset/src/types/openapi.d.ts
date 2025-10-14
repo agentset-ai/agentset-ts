@@ -1639,6 +1639,12 @@ export interface operations {
                     rerank?: boolean;
                     /** @description The number of results to return after reranking. Defaults to `topK`. */
                     rerankLimit?: number;
+                    /**
+                     * @description The reranking model to use.
+                     * @default cohere:rerank-v3.5
+                     * @enum {string}
+                     */
+                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                     /** @description A filter to apply to the results. */
                     filter?: {
                         [key: string]: unknown;

@@ -18,6 +18,30 @@ export class ApiClient {
     return this.fetcher;
   }
 
+  public prepareParams(
+    params: Record<
+      string,
+      string | number | boolean | string[] | number[] | boolean[]
+    >,
+  ): string {
+    const queryParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length === 0) return; // skip empty arrays
+      if (typeof value === "undefined") return; // skip undefined values
+
+      let valueToAppend: string;
+      if (typeof value === "string") valueToAppend = value;
+      else if (Array.isArray(value)) valueToAppend = value.join(",");
+      else valueToAppend = value.toString();
+
+      queryParams.append(key, valueToAppend);
+    });
+
+    const str = queryParams.toString();
+    return str ? `?${str}` : "";
+  }
+
   /**
    * Make a GET request to the API
    */

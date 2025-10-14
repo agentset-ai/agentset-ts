@@ -16,24 +16,6 @@ export class DocumentsResource {
     private readonly namespaceId: string,
   ) {}
 
-  private prepareParams(params: ListOptions): string {
-    const queryParams = new URLSearchParams();
-
-    if (params.statuses && params.statuses.length > 0)
-      queryParams.append("statuses", params.statuses.join(","));
-
-    if (params.orderBy) queryParams.append("orderBy", params.orderBy);
-    if (params.order) queryParams.append("order", params.order);
-    if (params.cursor) queryParams.append("cursor", params.cursor);
-    if (params.cursorDirection)
-      queryParams.append("cursorDirection", params.cursorDirection);
-    if (params.perPage)
-      queryParams.append("perPage", params.perPage.toString());
-
-    const str = queryParams.toString();
-    return str ? `?${str}` : "";
-  }
-
   /**
    * List all documents for the namespace
    */
@@ -44,7 +26,7 @@ export class DocumentsResource {
     documents: DocumentSchema[];
     pagination: { nextCursor: string | null };
   }> {
-    const query = this.prepareParams(params);
+    const query = this.client.prepareParams(params);
 
     const response = await this.client.get<{
       success: boolean;

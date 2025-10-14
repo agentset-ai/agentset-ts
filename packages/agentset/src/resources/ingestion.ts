@@ -20,25 +20,6 @@ export class IngestionResource {
     private readonly namespaceId: string,
   ) {}
 
-  private prepareParams(params: ListOptions): string {
-    // Build query parameters
-    const queryParams = new URLSearchParams();
-
-    if (params.statuses && params.statuses.length > 0)
-      queryParams.append("statuses", params.statuses.join(","));
-
-    if (params.orderBy) queryParams.append("orderBy", params.orderBy);
-    if (params.order) queryParams.append("order", params.order);
-    if (params.cursor) queryParams.append("cursor", params.cursor);
-    if (params.cursorDirection)
-      queryParams.append("cursorDirection", params.cursorDirection);
-    if (params.perPage)
-      queryParams.append("perPage", params.perPage.toString());
-
-    const queryString = queryParams.toString();
-    return queryString ? `?${queryString}` : "";
-  }
-
   /**
    * List all ingest jobs for the namespace
    */
@@ -49,7 +30,7 @@ export class IngestionResource {
     jobs: IngestJobSchema[];
     pagination: { nextCursor: string | null };
   }> {
-    const query = this.prepareParams(params);
+    const query = this.client.prepareParams(params);
     const response = await this.client.get<{
       success: boolean;
       data: IngestJobSchema[];
