@@ -7,6 +7,7 @@ import type {
 } from "../types/schemas";
 import type { NamespacesResource } from "./namespaces";
 import { DocumentsResource } from "./documents";
+import { HostingResource } from "./hosting";
 import { IngestionResource } from "./ingestion";
 import { UploadsResource } from "./uploads";
 
@@ -14,6 +15,7 @@ export class NamespaceResource {
   public readonly ingestion: IngestionResource;
   public readonly documents: DocumentsResource;
   public readonly uploads: UploadsResource;
+  public readonly hosting: HostingResource;
 
   constructor(
     private readonly client: ApiClient,
@@ -23,6 +25,7 @@ export class NamespaceResource {
     this.ingestion = new IngestionResource(client, namespaceId);
     this.documents = new DocumentsResource(client, namespaceId);
     this.uploads = new UploadsResource(client, namespaceId);
+    this.hosting = new HostingResource(client, namespaceId);
   }
 
   /**

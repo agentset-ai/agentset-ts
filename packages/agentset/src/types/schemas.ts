@@ -28,24 +28,16 @@ export type ListDocumentsOptionsSchema = NonNullable<
   operations["listDocuments"]["parameters"]
 >["query"];
 
-export interface SearchParamsSchema {
-  topK?: number;
-  rerank?: boolean;
-  rerankLimit?: number;
-  filter?: Record<string, unknown>;
-  minScore?: number;
-  includeRelationships?: boolean;
-  includeMetadata?: boolean;
-}
+export type SearchParamsSchema = Omit<
+  NonNullable<
+    operations["search"]["requestBody"]
+  >["content"]["application/json"],
+  "query"
+>;
 
-export interface SearchResultSchema {
-  id: string;
-  text: string;
-  score: number;
-  rerankScore?: number;
-  relationships?: Record<string, unknown>;
-  metadata?: Record<string, unknown>;
-}
+export type SearchResultSchema = NonNullable<
+  operations["search"]["responses"]["200"]["content"]["application/json"]
+>["data"][number];
 
 // Upload types
 export type CreateUploadOptionsSchema = NonNullable<
@@ -63,3 +55,11 @@ export type UploadResponseSchema = NonNullable<
 export type BatchUploadResponseSchema = NonNullable<
   operations["createBatchUpload"]["responses"]["201"]["content"]["application/json"]
 >["data"];
+
+// Hosting types
+export type HostingSchema = Schemas["hosting"];
+export type UpdateHostingOptionsSchema = NonNullable<
+  operations["updateHosting"]["requestBody"]
+>["content"]["application/json"];
+
+export type RerankingModel = NonNullable<SearchParamsSchema["rerankModel"]>;

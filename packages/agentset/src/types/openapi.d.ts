@@ -228,6 +228,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/namespace/{namespaceId}/hosting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve hosting configuration
+         * @description Retrieve the hosting configuration for a namespace.
+         */
+        get: operations["getHosting"];
+        put?: never;
+        /**
+         * Enable hosting
+         * @description Enable hosting for a namespace.
+         */
+        post: operations["enableHosting"];
+        /**
+         * Delete hosting configuration
+         * @description Delete the hosting configuration for a namespace.
+         */
+        delete: operations["deleteHosting"];
+        options?: never;
+        head?: never;
+        /**
+         * Update hosting configuration
+         * @description Update the hosting configuration for a namespace. If there is no change, return it as it is.
+         */
+        patch: operations["updateHosting"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -480,6 +512,11 @@ export interface components {
              * @default null
              */
             tenantId: string | null;
+            /**
+             * @description A unique external ID of the ingest job. You can use this to identify the ingest job in your system.
+             * @default null
+             */
+            externalId: string | null;
             status: components["schemas"]["ingest-job-status"];
             /**
              * @description The error message of the ingest job. Only exists when the status is failed.
@@ -523,11 +560,6 @@ export interface components {
             id: string;
             /** @description The ingest job ID of the document. */
             ingestJobId: string;
-            /**
-             * @description A unique external ID.
-             * @default null
-             */
-            externalId: string | null;
             /**
              * @description The name of the document.
              * @default null
@@ -613,6 +645,91 @@ export interface components {
             url: string;
             /** @description Key of the file in the storage. You'll send this in the `MANAGED_FILE` payload when creating an ingest job. */
             key: string;
+        };
+        /** Hosting */
+        hosting: {
+            /** @description The ID of the namespace this hosting belongs to. */
+            namespaceId: string;
+            /**
+             * @description The title displayed on the hosted interface.
+             * @default null
+             */
+            title: string | null;
+            /**
+             * @description The unique slug for accessing the hosted interface.
+             * @default null
+             */
+            slug: string | null;
+            /**
+             * @description The URL or base64 encoded image of the logo.
+             * @default null
+             */
+            logo: string | null;
+            /**
+             * @description The system prompt used for the chat interface.
+             * @default null
+             */
+            systemPrompt: string | null;
+            /**
+             * @description Example questions to display to users in the chat interface.
+             * @default []
+             */
+            exampleQuestions: string[];
+            /**
+             * @description Example search queries to display to users in the search interface.
+             * @default []
+             */
+            exampleSearchQueries: string[];
+            /**
+             * @description Welcome message displayed to users.
+             * @default null
+             */
+            welcomeMessage: string | null;
+            /**
+             * @description Path to metadata field used for citations.
+             * @default null
+             */
+            citationMetadataPath: string | null;
+            /**
+             * @description Whether search functionality is enabled.
+             * @default true
+             */
+            searchEnabled: boolean;
+            /**
+             * @description Configuration for the reranking model.
+             * @default null
+             */
+            rerankConfig: {
+                /** @enum {string} */
+                model: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+            } | null;
+            /**
+             * @description Configuration for the LLM model.
+             * @default null
+             */
+            llmConfig: {
+                /** @enum {string} */
+                model: "openai:gpt-4.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
+            } | null;
+            /**
+             * @description Whether the hosted interface is protected by authentication.
+             * @default true
+             */
+            protected: boolean;
+            /**
+             * @description List of allowed email addresses (when protected is true).
+             * @default []
+             */
+            allowedEmails: string[];
+            /**
+             * @description List of allowed email domains (when protected is true).
+             * @default []
+             */
+            allowedEmailDomains: string[];
+            /** @description The date and time the hosting was created. */
+            createdAt: string;
+            /** @description The date and time the hosting was last updated. */
+            updatedAt: string;
         };
         /** @description The embedding model config. If not provided, our managed embedding model will be used. Note: You can't change the embedding model config after the namespace is created. */
         "embedding-model-configOutput": components["schemas"]["openai-embedding-configOutput"] | components["schemas"]["azure-embedding-configOutput"] | components["schemas"]["voyage-embedding-configOutput"] | components["schemas"]["google-embedding-configOutput"] | {
@@ -1321,6 +1438,11 @@ export interface operations {
                     name?: string | null;
                     payload: components["schemas"]["ingest-job-payload"];
                     config?: components["schemas"]["ingest-job-config"];
+                    /**
+                     * @description A unique external ID of the ingest job. You can use this to identify the ingest job in your system.
+                     * @default null
+                     */
+                    externalId?: string | null;
                 };
             };
         };
@@ -1779,6 +1901,171 @@ export interface operations {
                         /** @constant */
                         success: true;
                         data: components["schemas"]["upload-result-schema"][];
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            403: components["responses"]["403"];
+            404: components["responses"]["404"];
+            409: components["responses"]["409"];
+            410: components["responses"]["410"];
+            422: components["responses"]["422"];
+            429: components["responses"]["429"];
+            500: components["responses"]["500"];
+        };
+    };
+    getHosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: components["parameters"]["NamespaceIdRef"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The hosting configuration */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["hosting"];
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            403: components["responses"]["403"];
+            404: components["responses"]["404"];
+            409: components["responses"]["409"];
+            410: components["responses"]["410"];
+            422: components["responses"]["422"];
+            429: components["responses"]["429"];
+            500: components["responses"]["500"];
+        };
+    };
+    enableHosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: components["parameters"]["NamespaceIdRef"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The created hosting configuration */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["hosting"];
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            403: components["responses"]["403"];
+            404: components["responses"]["404"];
+            409: components["responses"]["409"];
+            410: components["responses"]["410"];
+            422: components["responses"]["422"];
+            429: components["responses"]["429"];
+            500: components["responses"]["500"];
+        };
+    };
+    deleteHosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: components["parameters"]["NamespaceIdRef"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The deleted hosting configuration */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["hosting"];
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            403: components["responses"]["403"];
+            404: components["responses"]["404"];
+            409: components["responses"]["409"];
+            410: components["responses"]["410"];
+            422: components["responses"]["422"];
+            429: components["responses"]["429"];
+            500: components["responses"]["500"];
+        };
+    };
+    updateHosting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: components["parameters"]["NamespaceIdRef"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    title?: string;
+                    slug?: string;
+                    logo?: (string) | null;
+                    protected?: boolean;
+                    allowedEmails?: string[];
+                    allowedEmailDomains?: string[];
+                    systemPrompt?: string;
+                    exampleQuestions?: string[];
+                    exampleSearchQueries?: string[];
+                    welcomeMessage?: string;
+                    citationMetadataPath?: string;
+                    searchEnabled?: boolean;
+                    /** @enum {string} */
+                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                    /** @enum {string} */
+                    llmModel?: "openai:gpt-4.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
+                };
+            };
+        };
+        responses: {
+            /** @description The updated hosting configuration */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["hosting"];
                     };
                 };
             };
