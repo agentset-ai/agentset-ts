@@ -1,5 +1,11 @@
 # agentset
 
+## 1.7.0
+
+### Minor Changes
+
+- 88f5147: Sync openapi types & add hosting resource
+
 ## 1.6.0
 
 ### Minor Changes
