@@ -4,6 +4,7 @@ import type {
   SearchParamsSchema,
   SearchResultSchema,
   UpdateNamespaceOptionsSchema,
+  WarmUpResponseSchema,
 } from "../types/schemas";
 import type { NamespacesResource } from "./namespaces";
 import { DocumentsResource } from "./documents";
@@ -62,6 +63,18 @@ export class NamespaceResource {
       },
       options,
     );
+
+    return response.data;
+  }
+
+  /**
+   * Warm cache for a namespace
+   */
+  async warmUp(options?: FetchOptions) {
+    const response = await this.client.post<{
+      success: boolean;
+      data: WarmUpResponseSchema;
+    }>(`/v1/namespace/${this.namespaceId}/warm-up`, undefined, options);
 
     return response.data;
   }

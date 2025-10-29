@@ -13,6 +13,9 @@ export type UpdateNamespaceOptionsSchema = NonNullable<
   operations["updateNamespace"]["requestBody"]
 >["content"]["application/json"];
 
+export type WarmUpResponseSchema =
+  operations["warmUp"]["responses"]["200"]["content"]["application/json"]["data"];
+
 export type IngestJobSchema = Schemas["ingest-job"];
 export type ListIngestJobsOptionsSchema = NonNullable<
   operations["listIngestJobs"]["parameters"]
