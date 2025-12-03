@@ -1,5 +1,11 @@
 # agentset
 
+## 1.8.0
+
+### Minor Changes
+
+- 2a1a884: Sync openapi types
+
 ## 1.7.0
 
 ### Minor Changes
