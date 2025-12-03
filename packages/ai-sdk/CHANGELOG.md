@@ -1,5 +1,12 @@
 # @agentset/ai-sdk
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [2a1a884]
+  - agentset@1.8.0
+
 ## 2.1.2
 
 ### Patch Changes
