@@ -71,7 +71,7 @@ export interface paths {
         put?: never;
         /**
          * Create an ingest job
-         * @description Create an ingest job for the authenticated organization.
+         * @description Create an ingest job for the authenticated organization. You can control how documents are parsed and chunked using the optional `config` object (for example, chunk size, overlap, language, and advanced OCR/LLM options).
          */
         post: operations["createIngestJob"];
         delete?: never;
@@ -391,25 +391,17 @@ export interface components {
          * @enum {string}
          */
         "pagination-cursor-direction": "forward" | "backward";
-        /** @description The ingest job payload. */
-        "ingest-job-payload": components["schemas"]["text-payload"] | components["schemas"]["file-payload"] | components["schemas"]["managed-file-payload"] | components["schemas"]["batch-payload"];
-        /** Text Payload */
-        "text-payload": {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
+        /** @description The ingest job payload for creation. */
+        "ingest-job-payload-input": {
+            /** @constant */
             type: "TEXT";
             /** @description The text to ingest. */
             text: string;
             fileName?: string | null;
-        };
+        } | components["schemas"]["file-payload"] | components["schemas"]["managed-file-payload"] | components["schemas"]["crawl-payload"] | components["schemas"]["youtube-payload"] | components["schemas"]["batch-payload-input"];
         /** URL Payload */
         "file-payload": {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
+            /** @constant */
             type: "FILE";
             /**
              * Format: uri
@@ -420,21 +412,50 @@ export interface components {
         };
         /** Managed File Payload */
         "managed-file-payload": {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
+            /** @constant */
             type: "MANAGED_FILE";
             /** @description The key of the managed file to ingest. */
             key: string;
             fileName?: string | null;
         };
-        /** Batch Payload */
-        "batch-payload": {
+        /** Crawl Payload */
+        "crawl-payload": {
+            /** @constant */
+            type: "CRAWL";
             /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
+             * Format: uri
+             * @description The starting URL to crawl.
              */
+            url: string;
+            /** @description Maximum depth to follow links from the starting URL. Depth 1 means only the initial page. Defaults to `5`. */
+            maxDepth?: number;
+            /** @description Maximum number of pages to crawl before stopping. Helps bound large sites. Defaults to `50`. */
+            limit?: number;
+            /** @description Only crawl URLs whose path matches at least one of these prefixes. */
+            includePaths?: string[];
+            /** @description Never crawl URLs whose path matches these prefixes. */
+            excludePaths?: string[];
+            /** @description Custom HTTP headers to send with crawl requests (for example, auth headers). */
+            headers?: {
+                [key: string]: string;
+            };
+        };
+        /** Youtube Payload */
+        "youtube-payload": {
+            /** @constant */
+            type: "YOUTUBE";
+            /** @description The URLs of videos, channels, or playlists (hostname must be www.youtube.com or youtu.be). */
+            urls: string[];
+            /** @description We will try to fetch the first available transcript in the given languages. Default is `en`. */
+            transcriptLanguages?: components["schemas"]["language-code"][];
+            /** @description Whether to include metadata in the ingestion (like video description, tags, category, duration, etc...). Defaults to `false`. */
+            includeMetadata?: boolean;
+        };
+        /** @enum {string} */
+        "language-code": "af" | "am" | "ar" | "bg" | "bn" | "ca" | "cs" | "cy" | "da" | "de" | "en" | "es" | "et" | "fa" | "fi" | "fr" | "ga" | "gl" | "he" | "hi" | "hr" | "hu" | "id" | "is" | "it" | "jp" | "kr" | "lt" | "lv" | "mk" | "ms" | "mt" | "ne" | "nl" | "no" | "pl" | "pt" | "ro" | "ru" | "sk" | "sl" | "sr" | "sv" | "sw" | "ta" | "te" | "th" | "tl" | "tr" | "uk" | "ur" | "vi" | "zh" | "zu";
+        /** Batch Payload Input */
+        "batch-payload-input": {
+            /** @constant */
             type: "BATCH";
             items: ({
                 /** @constant */
@@ -463,32 +484,94 @@ export interface components {
             })[];
         };
         /** @description The document config. */
-        "document-config": components["schemas"]["ingest-job-config"];
-        /** @description The ingest job config. */
-        "ingest-job-config": {
-            /** @description Soft chunk size. */
+        "document-config": {
+            /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
             chunkSize?: number;
-            /** @description Hard chunk size. */
-            maxChunkSize?: number;
-            /** @description Custom chunk overlap. */
-            chunkOverlap?: number;
             /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
             metadata?: {
                 [key: string]: string | number | boolean;
             };
-            chunkingStrategy?: components["schemas"]["chunking-strategy"];
-            strategy?: components["schemas"]["strategy"];
+            /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
+            languageCode?: components["schemas"]["language-code"];
+            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
+            forceOcr?: boolean;
+            mode?: components["schemas"]["mode"];
+            /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
+            disableImageExtraction?: boolean;
+            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            disableOcrMath?: boolean;
+            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            useLlm?: boolean;
+            /**
+             * @deprecated
+             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             */
+            chunkOverlap?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] Hard chunk size. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             */
+            maxChunkSize?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] The legacy chunking strategy. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            chunkingStrategy?: "basic" | "by_title";
+            /**
+             * @deprecated
+             * @description [Deprecated] Legacy processing strategy used by the previous partition API. This option is ignored by the current pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
         };
         /**
-         * @description The chunking strategy to use. Defaults to `basic`.
+         * @description Processing mode for the parser. `fast` favors speed, `accurate` (pro subscription only) favors quality and layout fidelity, and `balanced` offers a compromise between the two. Defaults to `balanced`.
          * @enum {string}
          */
-        "chunking-strategy": "basic" | "by_title";
-        /**
-         * @description The strategy to use. Defaults to `auto`.
-         * @enum {string}
-         */
-        strategy: "auto" | "fast" | "hi_res" | "ocr_only";
+        mode: "fast" | "balanced" | "accurate";
+        /** @description The ingest job config. */
+        "ingest-job-config": {
+            /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
+            chunkSize?: number;
+            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
+            metadata?: {
+                [key: string]: string | number | boolean;
+            };
+            /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
+            languageCode?: components["schemas"]["language-code"];
+            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
+            forceOcr?: boolean;
+            mode?: components["schemas"]["mode"];
+            /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
+            disableImageExtraction?: boolean;
+            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            disableOcrMath?: boolean;
+            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            useLlm?: boolean;
+            /**
+             * @deprecated
+             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             */
+            chunkOverlap?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] Hard chunk size. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             */
+            maxChunkSize?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] The legacy chunking strategy. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            chunkingStrategy?: "basic" | "by_title";
+            /**
+             * @deprecated
+             * @description [Deprecated] Legacy processing strategy used by the previous partition API. This option is ignored by the current pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+        };
         /**
          * @description The status of the document.
          * @enum {string}
@@ -551,7 +634,7 @@ export interface components {
              * @default null
              */
             error: string | null;
-            payload: components["schemas"]["ingest-job-payloadOutput"];
+            payload: components["schemas"]["ingest-job-payload"];
             /** @default null */
             config: components["schemas"]["ingest-job-configOutput"] | null;
             /** @description The date and time the namespace was created. */
@@ -581,6 +664,52 @@ export interface components {
              * @default null
              */
             failedAt: string | null;
+        };
+        /** @description The ingest job payload. */
+        "ingest-job-payload": components["schemas"]["text-payload"] | components["schemas"]["file-payloadOutput"] | components["schemas"]["managed-file-payloadOutput"] | components["schemas"]["crawl-payloadOutput"] | components["schemas"]["youtube-payloadOutput"] | components["schemas"]["batch-payload"];
+        /** Text Payload */
+        "text-payload": {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "TEXT";
+            /** @description The text to ingest. */
+            text: string;
+            fileName?: string | null;
+        };
+        /** Batch Payload */
+        "batch-payload": {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "BATCH";
+            items: ({
+                /** @constant */
+                type: "TEXT";
+                /** @description The text to ingest. */
+                text: string;
+                fileName?: string | null;
+                config?: components["schemas"]["document-configOutput"];
+            } | {
+                /** @constant */
+                type: "FILE";
+                /**
+                 * Format: uri
+                 * @description The URL of the file to ingest.
+                 */
+                fileUrl: string;
+                fileName?: string | null;
+                config?: components["schemas"]["document-configOutput"];
+            } | {
+                /** @constant */
+                type: "MANAGED_FILE";
+                /** @description The key of the managed file to ingest. */
+                key: string;
+                fileName?: string | null;
+                config?: components["schemas"]["document-configOutput"];
+            })[];
         };
         /** Document */
         document: {
@@ -623,6 +752,22 @@ export interface components {
                 type: "MANAGED_FILE";
                 /** @description The key of the managed file to ingest. */
                 key: string;
+            } | {
+                /** @constant */
+                type: "CRAWLED_PAGE";
+                /** @description The title of the crawled page. */
+                title?: string;
+                /** @description The description of the crawled page. */
+                description?: string;
+                /** @description The language of the crawled page. */
+                language?: string;
+            } | {
+                /** @constant */
+                type: "YOUTUBE_VIDEO";
+                /** @description The ID of the youtube video. */
+                videoId: string;
+                /** @description The duration of the youtube video in seconds. */
+                duration?: number;
             };
             /** @default null */
             properties: {
@@ -735,6 +880,11 @@ export interface components {
             rerankConfig: {
                 /** @enum {string} */
                 model: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                /**
+                 * @description Number of documents after reranking.
+                 * @default 15
+                 */
+                limit: number;
             } | null;
             /**
              * @description Configuration for the LLM model.
@@ -744,6 +894,11 @@ export interface components {
                 /** @enum {string} */
                 model: "openai:gpt-4.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
             } | null;
+            /**
+             * @description Number of documents to retrieve from vector store.
+             * @default 50
+             */
+            topK: number;
             /**
              * @description Whether the hosted interface is protected by authentication.
              * @default true
@@ -834,19 +989,6 @@ export interface components {
             apiKey: string;
             region: components["schemas"]["turbopuffer-region-enum"];
         };
-        /** @description The ingest job payload. */
-        "ingest-job-payloadOutput": components["schemas"]["text-payloadOutput"] | components["schemas"]["file-payloadOutput"] | components["schemas"]["managed-file-payloadOutput"] | components["schemas"]["batch-payloadOutput"];
-        /** Text Payload */
-        "text-payloadOutput": {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: "TEXT";
-            /** @description The text to ingest. */
-            text: string;
-            fileName?: string | null;
-        };
         /** URL Payload */
         "file-payloadOutput": {
             /**
@@ -872,55 +1014,128 @@ export interface components {
             key: string;
             fileName?: string | null;
         };
-        /** Batch Payload */
-        "batch-payloadOutput": {
+        /** Crawl Payload */
+        "crawl-payloadOutput": {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: "BATCH";
-            items: ({
-                /** @constant */
-                type: "TEXT";
-                /** @description The text to ingest. */
-                text: string;
-                fileName?: string | null;
-                config?: components["schemas"]["document-configOutput"];
-            } | {
-                /** @constant */
-                type: "FILE";
-                /**
-                 * Format: uri
-                 * @description The URL of the file to ingest.
-                 */
-                fileUrl: string;
-                fileName?: string | null;
-                config?: components["schemas"]["document-configOutput"];
-            } | {
-                /** @constant */
-                type: "MANAGED_FILE";
-                /** @description The key of the managed file to ingest. */
-                key: string;
-                fileName?: string | null;
-                config?: components["schemas"]["document-configOutput"];
-            })[];
+            type: "CRAWL";
+            /**
+             * Format: uri
+             * @description The starting URL to crawl.
+             */
+            url: string;
+            /** @description Maximum depth to follow links from the starting URL. Depth 1 means only the initial page. Defaults to `5`. */
+            maxDepth?: number;
+            /** @description Maximum number of pages to crawl before stopping. Helps bound large sites. Defaults to `50`. */
+            limit?: number;
+            /** @description Only crawl URLs whose path matches at least one of these prefixes. */
+            includePaths?: string[];
+            /** @description Never crawl URLs whose path matches these prefixes. */
+            excludePaths?: string[];
+            /** @description Custom HTTP headers to send with crawl requests (for example, auth headers). */
+            headers?: {
+                [key: string]: string;
+            };
+        };
+        /** Youtube Payload */
+        "youtube-payloadOutput": {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "YOUTUBE";
+            /** @description The URLs of videos, channels, or playlists (hostname must be www.youtube.com or youtu.be). */
+            urls: string[];
+            /** @description We will try to fetch the first available transcript in the given languages. Default is `en`. */
+            transcriptLanguages?: components["schemas"]["language-code"][];
+            /** @description Whether to include metadata in the ingestion (like video description, tags, category, duration, etc...). Defaults to `false`. */
+            includeMetadata?: boolean;
         };
         /** @description The document config. */
-        "document-configOutput": components["schemas"]["ingest-job-configOutput"];
-        /** @description The ingest job config. */
-        "ingest-job-configOutput": {
-            /** @description Soft chunk size. */
+        "document-configOutput": {
+            /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
             chunkSize?: number;
-            /** @description Hard chunk size. */
-            maxChunkSize?: number;
-            /** @description Custom chunk overlap. */
-            chunkOverlap?: number;
             /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
             metadata?: {
                 [key: string]: string | number | boolean;
             };
-            chunkingStrategy?: components["schemas"]["chunking-strategy"];
-            strategy?: components["schemas"]["strategy"];
+            /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
+            languageCode?: components["schemas"]["language-code"];
+            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
+            forceOcr?: boolean;
+            mode?: components["schemas"]["mode"];
+            /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
+            disableImageExtraction?: boolean;
+            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            disableOcrMath?: boolean;
+            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            useLlm?: boolean;
+            /**
+             * @deprecated
+             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             */
+            chunkOverlap?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] Hard chunk size. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             */
+            maxChunkSize?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] The legacy chunking strategy. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            chunkingStrategy?: "basic" | "by_title";
+            /**
+             * @deprecated
+             * @description [Deprecated] Legacy processing strategy used by the previous partition API. This option is ignored by the current pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
+        };
+        /** @description The ingest job config. */
+        "ingest-job-configOutput": {
+            /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
+            chunkSize?: number;
+            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
+            metadata?: {
+                [key: string]: string | number | boolean;
+            };
+            /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
+            languageCode?: components["schemas"]["language-code"];
+            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
+            forceOcr?: boolean;
+            mode?: components["schemas"]["mode"];
+            /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
+            disableImageExtraction?: boolean;
+            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            disableOcrMath?: boolean;
+            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            useLlm?: boolean;
+            /**
+             * @deprecated
+             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             */
+            chunkOverlap?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] Hard chunk size. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             */
+            maxChunkSize?: number;
+            /**
+             * @deprecated
+             * @description [Deprecated] The legacy chunking strategy. This option is ignored by the current partition pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            chunkingStrategy?: "basic" | "by_title";
+            /**
+             * @deprecated
+             * @description [Deprecated] Legacy processing strategy used by the previous partition API. This option is ignored by the current pipeline and kept only for backwards compatibility.
+             * @enum {string}
+             */
+            strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
         };
     };
     responses: {
@@ -1265,7 +1480,7 @@ export interface operations {
                     embeddingConfig?: components["schemas"]["embedding-model-config"];
                     /**
                      * @default {
-                     *       "provider": "MANAGED_PINECONE"
+                     *       "provider": "MANAGED_TURBOPUFFER"
                      *     }
                      */
                     vectorStoreConfig?: components["schemas"]["create-vector-store-config"];
@@ -1481,7 +1696,7 @@ export interface operations {
                 "application/json": {
                     /** @description The name of the ingest job. */
                     name?: string | null;
-                    payload: components["schemas"]["ingest-job-payload"];
+                    payload: components["schemas"]["ingest-job-payload-input"];
                     config?: components["schemas"]["ingest-job-config"];
                     /**
                      * @description A unique external ID of the ingest job. You can use this to identify the ingest job in your system.
@@ -2097,6 +2312,8 @@ export interface operations {
                     rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                     /** @enum {string} */
                     llmModel?: "openai:gpt-4.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
+                    topK?: number;
+                    rerankLimit?: number;
                 };
             };
         };
