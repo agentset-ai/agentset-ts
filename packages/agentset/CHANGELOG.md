@@ -1,5 +1,11 @@
 # agentset
 
+## 1.8.1
+
+### Patch Changes
+
+- 19380f4: Sync openapi types
+
 ## 1.8.0
 
 ### Minor Changes
