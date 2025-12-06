@@ -392,16 +392,24 @@ export interface components {
          */
         "pagination-cursor-direction": "forward" | "backward";
         /** @description The ingest job payload for creation. */
-        "ingest-job-payload-input": {
-            /** @constant */
+        "ingest-job-payload-input": components["schemas"]["text-payload-input"] | components["schemas"]["file-payload"] | components["schemas"]["managed-file-payload"] | components["schemas"]["crawl-payload"] | components["schemas"]["youtube-payload"] | components["schemas"]["batch-payload-input"];
+        /** Text Payload */
+        "text-payload-input": {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             type: "TEXT";
+            fileName?: string | null;
             /** @description The text to ingest. */
             text: string;
-            fileName?: string | null;
-        } | components["schemas"]["file-payload"] | components["schemas"]["managed-file-payload"] | components["schemas"]["crawl-payload"] | components["schemas"]["youtube-payload"] | components["schemas"]["batch-payload-input"];
+        };
         /** URL Payload */
         "file-payload": {
-            /** @constant */
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             type: "FILE";
             /**
              * Format: uri
@@ -412,7 +420,10 @@ export interface components {
         };
         /** Managed File Payload */
         "managed-file-payload": {
-            /** @constant */
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             type: "MANAGED_FILE";
             /** @description The key of the managed file to ingest. */
             key: string;
@@ -420,7 +431,10 @@ export interface components {
         };
         /** Crawl Payload */
         "crawl-payload": {
-            /** @constant */
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             type: "CRAWL";
             /**
              * Format: uri
@@ -442,7 +456,10 @@ export interface components {
         };
         /** Youtube Payload */
         "youtube-payload": {
-            /** @constant */
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             type: "YOUTUBE";
             /** @description The URLs of videos, channels, or playlists (hostname must be www.youtube.com or youtu.be). */
             urls: string[];
@@ -455,14 +472,17 @@ export interface components {
         "language-code": "af" | "am" | "ar" | "bg" | "bn" | "ca" | "cs" | "cy" | "da" | "de" | "en" | "es" | "et" | "fa" | "fi" | "fr" | "ga" | "gl" | "he" | "hi" | "hr" | "hu" | "id" | "is" | "it" | "jp" | "kr" | "lt" | "lv" | "mk" | "ms" | "mt" | "ne" | "nl" | "no" | "pl" | "pt" | "ro" | "ru" | "sk" | "sl" | "sr" | "sv" | "sw" | "ta" | "te" | "th" | "tl" | "tr" | "uk" | "ur" | "vi" | "zh" | "zu";
         /** Batch Payload Input */
         "batch-payload-input": {
-            /** @constant */
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             type: "BATCH";
             items: ({
                 /** @constant */
                 type: "TEXT";
+                fileName?: string | null;
                 /** @description The text to ingest. */
                 text: string;
-                fileName?: string | null;
                 config?: components["schemas"]["document-config"];
             } | {
                 /** @constant */
@@ -504,7 +524,7 @@ export interface components {
             useLlm?: boolean;
             /**
              * @deprecated
-             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             * @description [Deprecated] Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
              */
             chunkOverlap?: number;
             /**
@@ -551,7 +571,7 @@ export interface components {
             useLlm?: boolean;
             /**
              * @deprecated
-             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             * @description [Deprecated] Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
              */
             chunkOverlap?: number;
             /**
@@ -674,9 +694,9 @@ export interface components {
              * @enum {string}
              */
             type: "TEXT";
+            fileName?: string | null;
             /** @description The text to ingest. */
             text: string;
-            fileName?: string | null;
         };
         /** Batch Payload */
         "batch-payload": {
@@ -688,9 +708,9 @@ export interface components {
             items: ({
                 /** @constant */
                 type: "TEXT";
+                fileName?: string | null;
                 /** @description The text to ingest. */
                 text: string;
-                fileName?: string | null;
                 config?: components["schemas"]["document-configOutput"];
             } | {
                 /** @constant */
@@ -879,7 +899,7 @@ export interface components {
              */
             rerankConfig: {
                 /** @enum {string} */
-                model: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                model: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                 /**
                  * @description Number of documents after reranking.
                  * @default 15
@@ -892,7 +912,7 @@ export interface components {
              */
             llmConfig: {
                 /** @enum {string} */
-                model: "openai:gpt-4.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
+                model: "openai:gpt-4.1" | "openai:gpt-5.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
             } | null;
             /**
              * @description Number of documents to retrieve from vector store.
@@ -1074,7 +1094,7 @@ export interface components {
             useLlm?: boolean;
             /**
              * @deprecated
-             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             * @description [Deprecated] Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
              */
             chunkOverlap?: number;
             /**
@@ -1116,7 +1136,7 @@ export interface components {
             useLlm?: boolean;
             /**
              * @deprecated
-             * @description Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
+             * @description [Deprecated] Custom chunk overlap (in characters) between consecutive chunks. Helps preserve context across chunk boundaries.
              */
             chunkOverlap?: number;
             /**
@@ -2023,10 +2043,10 @@ export interface operations {
                     rerankLimit?: number;
                     /**
                      * @description The reranking model to use.
-                     * @default cohere:rerank-v3.5
+                     * @default zeroentropy:zerank-2
                      * @enum {string}
                      */
-                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                     /** @description A filter to apply to the results. */
                     filter?: {
                         [key: string]: unknown;
@@ -2309,9 +2329,9 @@ export interface operations {
                     citationMetadataPath?: string;
                     searchEnabled?: boolean;
                     /** @enum {string} */
-                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                     /** @enum {string} */
-                    llmModel?: "openai:gpt-4.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
+                    llmModel?: "openai:gpt-4.1" | "openai:gpt-5.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
                     topK?: number;
                     rerankLimit?: number;
                 };
