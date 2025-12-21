@@ -12,11 +12,11 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "version": "changeset version && pnpm install --no-frozen-lockfile",
     "release": "changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
+    "@changesets/cli": "^2.29.8",
     "turbo": "^2.4.4",
     "@agentset/prettier-config": "workspace:*",
     "prettier": "catalog:",
