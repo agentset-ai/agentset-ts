@@ -507,20 +507,39 @@ export interface components {
         "document-config": {
             /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
             chunkSize?: number;
+            /** @description Delimiter to use for separating text before chunking. */
+            delimiter?: string;
             /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
             metadata?: {
                 [key: string]: string | number | boolean;
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
-            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
-            forceOcr?: boolean;
             mode?: components["schemas"]["mode"];
             /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
             disableImageExtraction?: boolean;
-            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            /** @description Disable synthetic image captions/descriptions in output. Images will be rendered as plain img tags without alt text. Defaults to `false`. */
+            disableImageCaptions?: boolean;
+            /** @description Enable chart understanding. This will extract the data from the charts in the document. Defaults to `false`. */
+            chartUnderstanding?: boolean;
+            /** @description Keep the page header in the output. Defaults to `false`. */
+            keepPageheaderInOutput?: boolean;
+            /** @description Keep the page footer in the output. Defaults to `false`. */
+            keepPagefooterInOutput?: boolean;
+            /**
+             * @deprecated
+             * @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`.
+             */
+            forceOcr?: boolean;
+            /**
+             * @deprecated
+             * @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`.
+             */
             disableOcrMath?: boolean;
-            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            /**
+             * @deprecated
+             * @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`.
+             */
             useLlm?: boolean;
             /**
              * @deprecated
@@ -554,20 +573,39 @@ export interface components {
         "ingest-job-config": {
             /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
             chunkSize?: number;
+            /** @description Delimiter to use for separating text before chunking. */
+            delimiter?: string;
             /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
             metadata?: {
                 [key: string]: string | number | boolean;
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
-            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
-            forceOcr?: boolean;
             mode?: components["schemas"]["mode"];
             /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
             disableImageExtraction?: boolean;
-            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            /** @description Disable synthetic image captions/descriptions in output. Images will be rendered as plain img tags without alt text. Defaults to `false`. */
+            disableImageCaptions?: boolean;
+            /** @description Enable chart understanding. This will extract the data from the charts in the document. Defaults to `false`. */
+            chartUnderstanding?: boolean;
+            /** @description Keep the page header in the output. Defaults to `false`. */
+            keepPageheaderInOutput?: boolean;
+            /** @description Keep the page footer in the output. Defaults to `false`. */
+            keepPagefooterInOutput?: boolean;
+            /**
+             * @deprecated
+             * @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`.
+             */
+            forceOcr?: boolean;
+            /**
+             * @deprecated
+             * @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`.
+             */
             disableOcrMath?: boolean;
-            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            /**
+             * @deprecated
+             * @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`.
+             */
             useLlm?: boolean;
             /**
              * @deprecated
@@ -864,6 +902,21 @@ export interface components {
              */
             logo: string | null;
             /**
+             * @description Custom Open Graph title for social media sharing.
+             * @default null
+             */
+            ogTitle: string | null;
+            /**
+             * @description Custom Open Graph description for social media sharing.
+             * @default null
+             */
+            ogDescription: string | null;
+            /**
+             * @description Custom Open Graph image URL for social media sharing.
+             * @default null
+             */
+            ogImage: string | null;
+            /**
              * @description The system prompt used for the chat interface.
              * @default null
              */
@@ -1077,20 +1130,39 @@ export interface components {
         "document-configOutput": {
             /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
             chunkSize?: number;
+            /** @description Delimiter to use for separating text before chunking. */
+            delimiter?: string;
             /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
             metadata?: {
                 [key: string]: string | number | boolean;
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
-            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
-            forceOcr?: boolean;
             mode?: components["schemas"]["mode"];
             /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
             disableImageExtraction?: boolean;
-            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            /** @description Disable synthetic image captions/descriptions in output. Images will be rendered as plain img tags without alt text. Defaults to `false`. */
+            disableImageCaptions?: boolean;
+            /** @description Enable chart understanding. This will extract the data from the charts in the document. Defaults to `false`. */
+            chartUnderstanding?: boolean;
+            /** @description Keep the page header in the output. Defaults to `false`. */
+            keepPageheaderInOutput?: boolean;
+            /** @description Keep the page footer in the output. Defaults to `false`. */
+            keepPagefooterInOutput?: boolean;
+            /**
+             * @deprecated
+             * @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`.
+             */
+            forceOcr?: boolean;
+            /**
+             * @deprecated
+             * @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`.
+             */
             disableOcrMath?: boolean;
-            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            /**
+             * @deprecated
+             * @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`.
+             */
             useLlm?: boolean;
             /**
              * @deprecated
@@ -1119,20 +1191,39 @@ export interface components {
         "ingest-job-configOutput": {
             /** @description Chunk size (in characters). Controls approximately how much text is included in each chunk. Defaults to `2048`. */
             chunkSize?: number;
+            /** @description Delimiter to use for separating text before chunking. */
+            delimiter?: string;
             /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
             metadata?: {
                 [key: string]: string | number | boolean;
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
-            /** @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`. */
-            forceOcr?: boolean;
             mode?: components["schemas"]["mode"];
             /** @description Disable image extraction from the document. When combined with `useLlm`, images may still be automatically captioned by the partition API. Defaults to `false`. */
             disableImageExtraction?: boolean;
-            /** @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`. */
+            /** @description Disable synthetic image captions/descriptions in output. Images will be rendered as plain img tags without alt text. Defaults to `false`. */
+            disableImageCaptions?: boolean;
+            /** @description Enable chart understanding. This will extract the data from the charts in the document. Defaults to `false`. */
+            chartUnderstanding?: boolean;
+            /** @description Keep the page header in the output. Defaults to `false`. */
+            keepPageheaderInOutput?: boolean;
+            /** @description Keep the page footer in the output. Defaults to `false`. */
+            keepPagefooterInOutput?: boolean;
+            /**
+             * @deprecated
+             * @description Force OCR on the document even if selectable text exists. Useful for scanned documents with unreliable embedded text. Defaults to `false`.
+             */
+            forceOcr?: boolean;
+            /**
+             * @deprecated
+             * @description Disable inline math recognition in OCR. This can be useful if the document contains content that is frequently misclassified as math. Defaults to `false`.
+             */
             disableOcrMath?: boolean;
-            /** @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`. */
+            /**
+             * @deprecated
+             * @description Enable LLM-assisted parsing to improve tables, forms, inline math, and layout detection. May increase latency and token usage. Defaults to `true`.
+             */
             useLlm?: boolean;
             /**
              * @deprecated
@@ -2319,6 +2410,9 @@ export interface operations {
                     title?: string;
                     slug?: string;
                     logo?: (string) | null;
+                    ogTitle?: string;
+                    ogDescription?: string;
+                    ogImage?: (string) | null;
                     protected?: boolean;
                     allowedEmails?: string[];
                     allowedEmailDomains?: string[];
