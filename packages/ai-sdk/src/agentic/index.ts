@@ -63,6 +63,11 @@ export interface AgenticEngineParams {
   postProcessChunks?: (
     chunks: SearchResultSchema[],
   ) => SearchResultSchema[] | Promise<SearchResultSchema[]>;
+
+  /**
+   * Optional tenant ID to filter searches to a specific tenant.
+   */
+  tenantId?: string;
 }
 
 const STATUS_PART_ID = "agentset-status";
@@ -79,6 +84,7 @@ export const AgenticEngine = (
     answerStep,
     afterQueries,
     postProcessChunks,
+    tenantId,
   }: AgenticEngineParams,
   dataStreamParams?: Omit<
     Parameters<typeof createUIMessageStream<AgentsetUIMessage>>[0],
@@ -139,12 +145,16 @@ export const AgenticEngine = (
           await Promise.all(
             newQueries.map(async (query) => {
               try {
-                const queryResult = await namespace.search(query.query, {
-                  topK: 50,
-                  rerankLimit: 15,
-                  rerank: true,
-                  ...(queryOptions ?? {}),
-                });
+                const queryResult = await namespace.search(
+                  query.query,
+                  {
+                    topK: 50,
+                    rerankLimit: 15,
+                    rerank: true,
+                    ...(queryOptions ?? {}),
+                  },
+                  { tenantId },
+                );
 
                 totalQueries++;
                 return { query: query.query, results: queryResult };
