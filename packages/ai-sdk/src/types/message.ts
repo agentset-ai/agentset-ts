@@ -1,5 +1,5 @@
 import type { SearchResultSchema } from "agentset";
-import { UIMessage } from "ai";
+import type { UIMessage } from "ai";
 
 export type AgentsetUIMessage = UIMessage<
   {},
