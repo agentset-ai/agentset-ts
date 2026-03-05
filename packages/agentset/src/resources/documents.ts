@@ -64,4 +64,42 @@ export class DocumentsResource {
       options,
     );
   }
+
+  /**
+   * Get a presigned download URL for a document's chunks
+   */
+  async getChunksDownloadUrl(
+    documentId: string,
+    options?: FetchOptions,
+  ): Promise<{ url: string }> {
+    const response = await this.client.post<{
+      success: boolean;
+      data: { url: string };
+    }>(
+      `/v1/namespace/${this.namespaceId}/documents/${documentId}/chunks-download-url`,
+      undefined,
+      options,
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Get a presigned download URL for a document's source file
+   */
+  async getFileDownloadUrl(
+    documentId: string,
+    options?: FetchOptions,
+  ): Promise<{ url: string }> {
+    const response = await this.client.post<{
+      success: boolean;
+      data: { url: string };
+    }>(
+      `/v1/namespace/${this.namespaceId}/documents/${documentId}/file-download-url`,
+      undefined,
+      options,
+    );
+
+    return response.data;
+  }
 }

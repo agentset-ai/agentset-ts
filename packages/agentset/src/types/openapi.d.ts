@@ -168,6 +168,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/namespace/{namespaceId}/documents/{documentId}/chunks-download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get chunks download URL
+         * @description Get a presigned download URL for a document's chunks. Only available for completed documents.
+         */
+        post: operations["getChunksDownloadUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/namespace/{namespaceId}/documents/{documentId}/file-download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get file download URL
+         * @description Get a presigned download URL for a document's source file. Only available for documents with source type MANAGED_FILE.
+         */
+        post: operations["getFileDownloadUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/namespace/{namespaceId}/search": {
         parameters: {
             query?: never;
@@ -391,6 +431,8 @@ export interface components {
          * @enum {string}
          */
         "pagination-cursor-direction": "forward" | "backward";
+        /** @description The number of records to return per page. */
+        "pagination-per-page": number;
         /** @description The ingest job payload for creation. */
         "ingest-job-payload-input": components["schemas"]["text-payload-input"] | components["schemas"]["file-payload"] | components["schemas"]["managed-file-payload"] | components["schemas"]["crawl-payload"] | components["schemas"]["youtube-payload"] | components["schemas"]["batch-payload-input"];
         /** Text Payload */
@@ -477,6 +519,7 @@ export interface components {
              * @enum {string}
              */
             type: "BATCH";
+            /** @description The items to ingest. */
             items: ({
                 /** @constant */
                 type: "TEXT";
@@ -509,9 +552,9 @@ export interface components {
             chunkSize?: number;
             /** @description Delimiter to use for separating text before chunking. */
             delimiter?: string;
-            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
+            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only string, number, boolean, and array of strings are allowed. */
             metadata?: {
-                [key: string]: string | number | boolean;
+                [key: string]: string | number | boolean | string[];
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
@@ -575,9 +618,9 @@ export interface components {
             chunkSize?: number;
             /** @description Delimiter to use for separating text before chunking. */
             delimiter?: string;
-            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
+            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only string, number, boolean, and array of strings are allowed. */
             metadata?: {
-                [key: string]: string | number | boolean;
+                [key: string]: string | number | boolean | string[];
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
@@ -636,9 +679,111 @@ export interface components {
          */
         "document-status": "BACKLOG" | "QUEUED" | "QUEUED_FOR_RESYNC" | "QUEUED_FOR_DELETE" | "PRE_PROCESSING" | "PROCESSING" | "DELETING" | "CANCELLING" | "COMPLETED" | "FAILED" | "CANCELLED";
         "upload-file-schema": {
+            /**
+             * @description File name
+             * @example document.pdf
+             */
             fileName: string;
+            /**
+             * @description Content type
+             * @example application/pdf
+             */
             contentType: string;
+            /**
+             * @description File size in bytes
+             * @example 1024
+             */
             fileSize: number;
+        };
+        /** @description Triggered when a document is queued, processed, ready, or deleted. */
+        DocumentWebhookEvent: {
+            id: string;
+            event: "document.queued" | "document.queued_for_resync" | "document.queued_for_deletion" | "document.processing" | "document.error" | "document.ready" | "document.deleted";
+            createdAt: string;
+            data: {
+                /** @description Unique identifier for the document. */
+                id: string;
+                /** @description Name of the document. */
+                name: string | null;
+                /** @description ID of the namespace. */
+                namespaceId: string;
+                /** @description ID of the organization. */
+                organizationId: string;
+                /** @description Current status of the document. */
+                status: components["schemas"]["document-status"];
+                /** @description Source configuration of the document. */
+                source: {
+                    /** @constant */
+                    type: "TEXT";
+                    /** @description The text to ingest. */
+                    text: string;
+                } | {
+                    /** @constant */
+                    type: "FILE";
+                    /**
+                     * Format: uri
+                     * @description The URL of the file to ingest.
+                     */
+                    fileUrl: string;
+                } | {
+                    /** @constant */
+                    type: "MANAGED_FILE";
+                    /** @description The key of the managed file to ingest. */
+                    key: string;
+                } | {
+                    /** @constant */
+                    type: "CRAWLED_PAGE";
+                    /** @description The title of the crawled page. */
+                    title?: string;
+                    /** @description The description of the crawled page. */
+                    description?: string;
+                    /** @description The language of the crawled page. */
+                    language?: string;
+                } | {
+                    /** @constant */
+                    type: "YOUTUBE_VIDEO";
+                    /** @description The ID of the youtube video. */
+                    videoId: string;
+                    /** @description The duration of the youtube video in seconds. */
+                    duration?: number;
+                };
+                /** @description Total characters in the document. */
+                totalCharacters?: number | null;
+                /** @description Total chunks created from the document. */
+                totalChunks?: number | null;
+                /** @description Total pages in the document. */
+                totalPages?: number | null;
+                /** @description Error message if document processing failed. */
+                error?: string | null;
+                /** @description When the document was created. */
+                createdAt: string;
+                /** @description When the document was last updated. */
+                updatedAt: string;
+            };
+        };
+        /** @description Triggered when an ingest job is queued, processed, ready, or deleted. */
+        IngestJobWebhookEvent: {
+            id: string;
+            event: "ingest_job.queued" | "ingest_job.queued_for_resync" | "ingest_job.queued_for_deletion" | "ingest_job.processing" | "ingest_job.error" | "ingest_job.ready" | "ingest_job.deleted";
+            createdAt: string;
+            data: {
+                /** @description Unique identifier for the ingest job. */
+                id: string;
+                /** @description Name of the ingest job. */
+                name: string | null;
+                /** @description ID of the namespace. */
+                namespaceId: string;
+                /** @description ID of the organization. */
+                organizationId: string;
+                /** @description Current status of the ingest job. */
+                status: components["schemas"]["ingest-job-status"];
+                /** @description Error message if ingest job failed. */
+                error?: string | null;
+                /** @description When the ingest job was created. */
+                createdAt: string;
+                /** @description When the ingest job was last updated. */
+                updatedAt: string;
+            };
         };
         /** Namespace */
         namespace: {
@@ -743,6 +888,7 @@ export interface components {
              * @enum {string}
              */
             type: "BATCH";
+            /** @description The items to ingest. */
             items: ({
                 /** @constant */
                 type: "TEXT";
@@ -946,27 +1092,10 @@ export interface components {
              * @default true
              */
             searchEnabled: boolean;
-            /**
-             * @description Configuration for the reranking model.
-             * @default null
-             */
-            rerankConfig: {
-                /** @enum {string} */
-                model: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
-                /**
-                 * @description Number of documents after reranking.
-                 * @default 15
-                 */
-                limit: number;
-            } | null;
-            /**
-             * @description Configuration for the LLM model.
-             * @default null
-             */
-            llmConfig: {
-                /** @enum {string} */
-                model: "openai:gpt-4.1" | "openai:gpt-5.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
-            } | null;
+            /** @description Configuration for the reranking model. */
+            rerankConfig: unknown;
+            /** @description Configuration for the LLM model. */
+            llmConfig: unknown;
             /**
              * @description Number of documents to retrieve from vector store.
              * @default 50
@@ -1132,9 +1261,9 @@ export interface components {
             chunkSize?: number;
             /** @description Delimiter to use for separating text before chunking. */
             delimiter?: string;
-            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
+            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only string, number, boolean, and array of strings are allowed. */
             metadata?: {
-                [key: string]: string | number | boolean;
+                [key: string]: string | number | boolean | string[];
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
@@ -1193,9 +1322,9 @@ export interface components {
             chunkSize?: number;
             /** @description Delimiter to use for separating text before chunking. */
             delimiter?: string;
-            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only primitive types (string, number, boolean) are allowed. */
+            /** @description Custom metadata to be added to the ingested documents. It cannot contain nested objects; only string, number, boolean, and array of strings are allowed. */
             metadata?: {
-                [key: string]: string | number | boolean;
+                [key: string]: string | number | boolean | string[];
             };
             /** @description Language code to use for text processing (for example, `en`, `ar`, or `fr`). When omitted, the partition API will attempt to detect the language automatically. */
             languageCode?: components["schemas"]["language-code"];
@@ -1248,6 +1377,8 @@ export interface components {
              */
             strategy?: "auto" | "fast" | "hi_res" | "ocr_only";
         };
+        /** @description Webhook event schema */
+        WebhookEvent: components["schemas"]["DocumentWebhookEvent"] | components["schemas"]["IngestJobWebhookEvent"];
     };
     responses: {
         /** @description The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing). */
@@ -1746,7 +1877,7 @@ export interface operations {
                 order?: "asc" | "desc";
                 cursor?: components["schemas"]["pagination-cursor"];
                 cursorDirection?: components["schemas"]["pagination-cursor-direction"];
-                perPage?: number;
+                perPage?: components["schemas"]["pagination-per-page"];
             };
             header?: {
                 /** @description Optional tenant id to use for the request. If not provided, the namespace will be used directly. Must be alphanumeric and up to 64 characters. */
@@ -1977,7 +2108,7 @@ export interface operations {
                 ingestJobId?: string;
                 cursor?: components["schemas"]["pagination-cursor"];
                 cursorDirection?: components["schemas"]["pagination-cursor-direction"];
-                perPage?: number;
+                perPage?: components["schemas"]["pagination-per-page"];
             };
             header?: {
                 /** @description Optional tenant id to use for the request. If not provided, the namespace will be used directly. Must be alphanumeric and up to 64 characters. */
@@ -2102,6 +2233,86 @@ export interface operations {
             500: components["responses"]["500"];
         };
     };
+    getChunksDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: components["parameters"]["NamespaceIdRef"];
+                /** @description The id of the document (prefixed with doc_) */
+                documentId: components["parameters"]["DocumentIdRef"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The presigned download URL for the chunks */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            url: string;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            403: components["responses"]["403"];
+            404: components["responses"]["404"];
+            409: components["responses"]["409"];
+            410: components["responses"]["410"];
+            422: components["responses"]["422"];
+            429: components["responses"]["429"];
+            500: components["responses"]["500"];
+        };
+    };
+    getFileDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the namespace (prefixed with ns_) */
+                namespaceId: components["parameters"]["NamespaceIdRef"];
+                /** @description The id of the document (prefixed with doc_) */
+                documentId: components["parameters"]["DocumentIdRef"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The presigned download URL for the file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            url: string;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            403: components["responses"]["403"];
+            404: components["responses"]["404"];
+            409: components["responses"]["409"];
+            410: components["responses"]["410"];
+            422: components["responses"]["422"];
+            429: components["responses"]["429"];
+            500: components["responses"]["500"];
+        };
+    };
     search: {
         parameters: {
             query?: never;
@@ -2137,7 +2348,7 @@ export interface operations {
                      * @default zeroentropy:zerank-2
                      * @enum {string}
                      */
-                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                    rerankModel?: "cohere:rerank-v4.0-pro" | "cohere:rerank-v4.0-fast" | "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                     /** @description A filter to apply to the results. */
                     filter?: {
                         [key: string]: unknown;
@@ -2181,13 +2392,7 @@ export interface operations {
                                 [key: string]: unknown;
                             };
                             metadata?: {
-                                file_directory: string;
-                                filename: string;
-                                filetype: string;
-                                link_texts?: unknown[];
-                                link_urls?: unknown[];
-                                languages?: unknown[];
-                                sequence_number?: number;
+                                [key: string]: unknown;
                             };
                         }[];
                     };
@@ -2423,9 +2628,9 @@ export interface operations {
                     citationMetadataPath?: string;
                     searchEnabled?: boolean;
                     /** @enum {string} */
-                    rerankModel?: "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
+                    rerankModel?: "cohere:rerank-v4.0-pro" | "cohere:rerank-v4.0-fast" | "cohere:rerank-v3.5" | "cohere:rerank-english-v3.0" | "cohere:rerank-multilingual-v3.0" | "zeroentropy:zerank-2" | "zeroentropy:zerank-1" | "zeroentropy:zerank-1-small";
                     /** @enum {string} */
-                    llmModel?: "openai:gpt-4.1" | "openai:gpt-5.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
+                    llmModel?: "openai:gpt-4.1" | "openai:gpt-5.2" | "openai:gpt-5.1" | "openai:gpt-5" | "openai:gpt-5-mini" | "openai:gpt-5-nano";
                     topK?: number;
                     rerankLimit?: number;
                 };
