@@ -1,5 +1,11 @@
 # agentset
 
+## 1.9.1
+
+### Patch Changes
+
+- af8e369: Update OpenAPI types & add getChunksDownloadUrl and getFileDownloadUrl
+
 ## 1.9.0
 
 ### Minor Changes
