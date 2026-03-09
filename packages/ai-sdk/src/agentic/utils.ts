@@ -1,11 +1,14 @@
 import type { SearchResultSchema } from "agentset";
-import type { LanguageModel, ModelMessage } from "ai";
 import { generateText } from "ai";
 import { z } from "zod/v4";
 
+import type {
+  CompatLanguageModel,
+  CompatModelMessage,
+} from "../types/compat";
 import { EVALUATE_QUERIES_PROMPT, GENERATE_QUERIES_PROMPT } from "./prompts";
 
-export const getMessageContent = (message: ModelMessage) => {
+export const getMessageContent = (message: CompatModelMessage) => {
   if (typeof message.content === "string") {
     return message.content;
   }
@@ -17,7 +20,7 @@ export const getMessageContent = (message: ModelMessage) => {
     .trim();
 };
 
-export const formatChatHistory = (messages: ModelMessage[]) => {
+export const formatChatHistory = (messages: CompatModelMessage[]) => {
   return messages.map((m) => `${m.role}: ${getMessageContent(m)}`).join("\n");
 };
 
@@ -39,12 +42,12 @@ const schema = z.object({
 export type Queries = z.infer<typeof schema>["queries"];
 
 export const generateQueries = async (
-  model: LanguageModel,
+  model: CompatLanguageModel,
   {
     messages,
     oldQueries,
   }: {
-    messages: ModelMessage[];
+    messages: CompatModelMessage[];
     oldQueries: Queries;
   },
 ) => {
@@ -76,12 +79,12 @@ const evalSchema = z.object({
 });
 
 export const evaluateQueries = async (
-  model: LanguageModel,
+  model: CompatLanguageModel,
   {
     messages,
     sources,
   }: {
-    messages: ModelMessage[];
+    messages: CompatModelMessage[];
     sources: SearchResultSchema[];
   },
 ) => {

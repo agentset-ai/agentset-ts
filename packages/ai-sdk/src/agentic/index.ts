@@ -1,10 +1,13 @@
 import type { SearchParamsSchema, SearchResultSchema } from "agentset";
-import type { LanguageModel, ModelMessage } from "ai";
 import { createUIMessageStream, streamText } from "ai";
 
+import type {
+  CompatLanguageModel,
+  CompatModelMessage,
+} from "../types/compat";
+import type { AgentsetUIMessage } from "../types/message";
 import type { NamespaceInstance } from "../types/ns";
 import type { Queries } from "./utils";
-import { AgentsetUIMessage } from "../types/message";
 import { ANSWER_SYSTEM_PROMPT, NEW_MESSAGE_PROMPT } from "./prompts";
 import {
   evaluateQueries,
@@ -17,7 +20,7 @@ export interface AgenticEngineParams {
   /**
    * The chat history.
    */
-  messages: ModelMessage[];
+  messages: CompatModelMessage[];
 
   /**
    * Maximum number of evaluations loops to run.
@@ -40,12 +43,12 @@ export interface AgenticEngineParams {
   /**
    * Parameters for the `generateQueries` step.
    */
-  generateQueriesStep: { model: LanguageModel };
+  generateQueriesStep: { model: CompatLanguageModel };
 
   /**
    * Parameters for the `evaluateQueries` step.
    */
-  evaluateQueriesStep: { model: LanguageModel };
+  evaluateQueriesStep: { model: CompatLanguageModel };
 
   /**
    * Parameters for the `answerStep` step.
@@ -63,6 +66,11 @@ export interface AgenticEngineParams {
   postProcessChunks?: (
     chunks: SearchResultSchema[],
   ) => SearchResultSchema[] | Promise<SearchResultSchema[]>;
+
+  /**
+   * Optional tenant ID to filter searches to a specific tenant.
+   */
+  tenantId?: string;
 }
 
 const STATUS_PART_ID = "agentset-status";
@@ -79,6 +87,7 @@ export const AgenticEngine = (
     answerStep,
     afterQueries,
     postProcessChunks,
+    tenantId,
   }: AgenticEngineParams,
   dataStreamParams?: Omit<
     Parameters<typeof createUIMessageStream<AgentsetUIMessage>>[0],
@@ -139,12 +148,16 @@ export const AgenticEngine = (
           await Promise.all(
             newQueries.map(async (query) => {
               try {
-                const queryResult = await namespace.search(query.query, {
-                  topK: 50,
-                  rerankLimit: 15,
-                  rerank: true,
-                  ...(queryOptions ?? {}),
-                });
+                const queryResult = await namespace.search(
+                  query.query,
+                  {
+                    topK: 50,
+                    rerankLimit: 15,
+                    rerank: true,
+                    ...(queryOptions ?? {}),
+                  },
+                  { tenantId },
+                );
 
                 totalQueries++;
                 return { query: query.query, results: queryResult };
@@ -190,7 +203,7 @@ export const AgenticEngine = (
         ? await postProcessChunks(dedupedData)
         : dedupedData;
 
-      const newMessages: ModelMessage[] = [
+      const newMessages: CompatModelMessage[] = [
         ...messagesWithoutQuery,
         {
           role: "user",
